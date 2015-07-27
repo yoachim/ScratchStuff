@@ -52,7 +52,7 @@ data = np.load('Dump/opsim_Pass_expMJD_UNIS.npz')
 ack = data['metricValues'][0].copy()
 
 f = open('Dump/enigma_dump.dat','w')
-print >>f, 'obsHistID, MJD, fieldRA, fieldDec, eclipLat, eclipLon, filter, filtskybrightness, finSeeing, solarElong, fiveSigmaDepth,  NEOGeoDist, NEOHelioX, NEOHelioY, sunAlt, sunAz'
+print >>f, 'obsHistID, MJD, fieldRA, fieldDec, altitude, azimuth, eclipLat, eclipLon, filter, filtskybrightness, finSeeing, solarElong, fiveSigmaDepth,  NEOGeoDist, NEOHelioX, NEOHelioY, sunAlt, sunAz'
 
 sun = ephem.Sun()
 
