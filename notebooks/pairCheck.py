@@ -65,7 +65,7 @@ def makeBundleList(dbFile, runName=None, nside=128, benchmark='design',
 
     slicer = slicers.OneDSlicer(sliceColName='night', binsize=1)
     metric = metrics.UniqueRatioMetric(col='fieldID')
-    sql=''
+    sql='filter="g" or filter="r" or filter="i" or filter="z"'
     displayDict = {'group':'Fields Per Night'}
     bundleList.append(metricBundles.MetricBundle(metric,slicer,sql,
                                                  summaryMetrics=summaryStats,
