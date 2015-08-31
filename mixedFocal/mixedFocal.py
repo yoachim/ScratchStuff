@@ -6,7 +6,8 @@ import lsst.sims.maf.slicers as slicers
 import lsst.sims.maf.stackers as stackers
 import lsst.sims.maf.plots as plots
 import lsst.sims.maf.metricBundles as metricBundles
-
+import lsst.sims.maf.utils as utils
+import warnings
 
 # Make a new stacker to modify single visit depths
 class V2m5Stacker(stackers.BaseStacker):
@@ -22,6 +23,7 @@ class V2m5Stacker(stackers.BaseStacker):
         """
         self.colsReq = [filterCol,m5Col]
         self.colsAdded = ['v2fiveSigmaDepth']
+        self.units = 'mag'
         self.filterCol = filterCol
         self.m5Col = m5Col
         self.m5Deltas = m5Deltas
@@ -35,13 +37,132 @@ class V2m5Stacker(stackers.BaseStacker):
         return simData
 
 
-class MixedM5Metric(mertics.BaseMetric):
+# Let's convert the raft string to an int:
+#     19 20 21
+#  14 15 16 17 18
+#  9  10 11 12 13
+#  4  5  6  7  8
+#     1  2  3
+
+class MixedM5Metric(metrics.BaseMetric):
     """
     Modify the m5 values on some of the rafts then compute the final co-added m5.
     """
-
     def __init__(self, m5v1Col = 'fiveSigmaDepth', m5v2Col = 'v2fiveSigmaDepth', units='mag',
-                 rafts1 = [], rafts2= []):
-        super(MixedM5Metric, self).__init__(col=[m5v1Col,m5v2Col],units=units, **kwargs)
+                 rafts1 = [1,3,4,6,8,10,12,14,16,18,19,21], rafts2= [2,5,7,9,11,13,15,17,20],
+                 metricName='MixedM5', **kwargs):
+        super(MixedM5Metric, self).__init__(col=[m5v1Col,m5v2Col],units=units, metricName=metricName,
+                                            **kwargs)
+
+        # Check that we haven't doubly defined a raft
+        if True in np.in1d(rafts1,rafts2):
+            raise ValueError('Raft is assigened to vendor 1 and vendor 2.')
+
         self.m5v1Col = m5v1Col
         self.m5v2Col = m5v2Col
+        self.rafts1 = rafts1
+        self.rafts2 = rafts2
+
+        self.convertDict = {'R:1,0':1,
+                            'R:2,0':2 ,
+                            'R:3,0':3 ,
+                            'R:0,1':4 ,
+                            'R:1,1':5 ,
+                            'R:2,1':6 ,
+                            'R:3,1':7 ,
+                            'R:4,1':8 ,
+                            'R:0,2':9 ,
+                            'R:1,2':10,
+                            'R:2,2':11,
+                            'R:3,2':12,
+                            'R:4,2':13,
+                            'R:0,3':14,
+                            'R:1,3':15,
+                            'R:2,3':16,
+                            'R:3,3':17,
+                            'R:4,3':18,
+                            'R:1,4':19,
+                            'R:2,4':20,
+                            'R:3,4':21}
+        allRafts = rafts1 + rafts2
+
+        if np.size(np.unique(allRafts)) != 21:
+            warnings.warn('number of defined rafts = %i, (21 expected)' % np.size(np.unique(allRafts)))
+
+    def run(self, dataSlice, slicePoint=None):
+
+        m5Values = np.zeros(dataSlice.size,dtype=float)
+        raftNames = [self.convertDict[point[0:5]]  for point in slicePoint['chipNames']]
+        v1rafts = np.in1d(raftNames, self.rafts1)
+        m5Values[v1rafts] = dataSlice[self.m5v1Col][v1rafts]
+
+        v2rafts = np.in1d(raftNames, self.rafts2)
+        m5Values[v2rafts] = dataSlice[self.m5v2Col][v2rafts]
+
+        good = np.where( m5Values != 0.)
+        return 1.25 * np.log10(np.sum(10.**(.8*m5Values[good])))
+
+
+
+opsdb = db.OpsimDatabase('enigma_1189_sqlite.db')
+outDir = 'output_directory'
+resultsDb = db.ResultsDb(outDir=outDir)
+
+# Grab just the WFD area
+propids, propTags = opsdb.fetchPropInfo()
+WFDpropid = propTags['WFD']
+wfdWhere = utils.createSQLWhere('WFD', propTags)
+
+summaryStats = [metrics.MedianMetric(), metrics.RmsMetric()]
+
+filters = ['u','g']
+nside = 32
+bundleList = []
+
+years = [1,3,10]
+nightWheres = [' and night <= %i' % (year*365.25) for year in years]
+raftConfigs = {'A':{'rafts1':[1,3,4,6,8,10,12,14,16,18,19,21], 'rafts2':[2,5,7,9,11,13,15,17,20]},
+               'B':{'rafts1':[7,8,11,12,13,15,16,17,18,19,20,21], 'rafts2':[1,2,3,4,5,6,9,10,14]},
+               'C':{'rafts1':[2,5,6,7,9,10,11,12,13,15,16,17,20], 'rafts2':[1,3,4,8,14,18,19,21]},
+               'D':{'rafts1':[1,2,3,4,6,8,9,10,12,13,14,16,18,19,20,21], 'rafts2':[5,7,11,15,17]},
+               'E':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]},
+               'F':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]}
+}
+#     19 20 21
+#  14 15 16 17 18
+#  9  10 11 12 13
+#  4  5  6  7  8
+#     1  2  3
+
+slicer = slicers.HealpixSlicer(nside=nside, useCamera=True,
+                                   lonCol='ditheredRA', latCol='ditheredDec')
+for year,nw in zip(years,nightWheres):
+    for filterName in filters:
+        sql = 'filter="%s"' % filterName
+        sql+= ' and '+wfdWhere
+        sql += nw
+
+        metric = metrics.Coaddm5Metric(metricName='All Vendor 1, year %i' % year)
+        bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+
+        metric = metrics.Coaddm5Metric(m5Col='v2fiveSigmaDepth', metricName='All Vendor 2, year %i' % year)
+        bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+
+
+
+for year,nw in zip(years,nightWheres):
+    for raftConfig in raftConfigs.keys():
+        for filterName in filters:
+            metric = MixedM5Metric(metricName='MixedM5 config %s, year %i' % (raftConfig,year),
+                                   **raftConfigs[raftConfig])
+            sql = 'filter="%s"' % filterName
+            sql+= ' and '+wfdWhere
+            sql += nw
+            bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+
+
+
+bg = metricBundles.makeBundlesDictFromList(bundleList)
+group = metricBundles.MetricBundleGroup(bg, opsdb, outDir=outDir, resultsDb=resultsDb)
+group.runAll()
+group.plotAll()
