@@ -113,10 +113,10 @@ propids, propTags = opsdb.fetchPropInfo()
 WFDpropid = propTags['WFD']
 wfdWhere = utils.createSQLWhere('WFD', propTags)
 
-summaryStats = [metrics.MedianMetric(), metrics.RmsMetric()]
+summaryStats = [metrics.MedianMetric(), metrics.RmsMetric(), metrics.RobustRmsMetric()]
 
 filters = ['u','g']
-nside = 32
+nside = 64
 bundleList = []
 
 years = [1,3,10]
