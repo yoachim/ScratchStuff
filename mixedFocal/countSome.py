@@ -40,7 +40,7 @@ sensors = ['S:0,0', 'S:0,1', 'S:0,2',
 chips1 = []
 for raft in rafts1:
     for sensor in sensors:
-        chips1.append(raft+','+sensor)
+        chips1.append(raft+' '+sensor)
 
 chips2 = []
 for raft in rafts2:
