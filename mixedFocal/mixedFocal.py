@@ -14,6 +14,8 @@ class V2m5Stacker(stackers.BaseStacker):
     """
     Make a stacker to create a new coaddM5 column for a
     different sensitivity chip.
+
+    So, vendor 2 is much less deep in u, and slightly deeper in g and r.
     """
     def __init__(self, filterCol='filter', m5Col='fiveSigmaDepth',
                  m5Deltas={'u':-0.3,'g':0.05,'r':0.03}):
@@ -105,7 +107,7 @@ class MixedM5Metric(metrics.BaseMetric):
 
 
 opsdb = db.OpsimDatabase('enigma_1189_sqlite.db')
-outDir = 'output_directory'
+outDir = 'Flipped'
 resultsDb = db.ResultsDb(outDir=outDir)
 
 # Grab just the WFD area
@@ -121,13 +123,25 @@ bundleList = []
 
 years = [1,3,10]
 nightWheres = [' and night <= %i' % (year*365.25) for year in years]
-raftConfigs = {'A':{'rafts1':[1,3,4,6,8,10,12,14,16,18,19,21], 'rafts2':[2,5,7,9,11,13,15,17,20]},
-               'B':{'rafts1':[7,8,11,12,13,15,16,17,18,19,20,21], 'rafts2':[1,2,3,4,5,6,9,10,14]},
-               'C':{'rafts1':[2,5,6,7,9,10,11,12,13,15,16,17,20], 'rafts2':[1,3,4,8,14,18,19,21]},
-               'D':{'rafts1':[1,2,3,4,6,8,9,10,12,13,14,16,18,19,20,21], 'rafts2':[5,7,11,15,17]},
-               'E':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]},
-               'F':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]}
+
+#raftConfigs = {'A':{'rafts1':[1,3,4,6,8,10,12,14,16,18,19,21], 'rafts2':[2,5,7,9,11,13,15,17,20]},
+#               'B':{'rafts1':[7,8,11,12,13,15,16,17,18,19,20,21], 'rafts2':[1,2,3,4,5,6,9,10,14]},
+#               'C':{'rafts1':[2,5,6,7,9,10,11,12,13,15,16,17,20], 'rafts2':[1,3,4,8,14,18,19,21]},
+#               'D':{'rafts1':[1,2,3,4,6,8,9,10,12,13,14,16,18,19,20,21], 'rafts2':[5,7,11,15,17]},
+#               'E':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]},
+#               'F':{'rafts1':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts2':[6,10,11,12,16]}
+#}
+
+# Flip things around
+raftConfigs = {'A':{'rafts2':[1,3,4,6,8,10,12,14,16,18,19,21], 'rafts1':[2,5,7,9,11,13,15,17,20]},
+               'B':{'rafts2':[7,8,11,12,13,15,16,17,18,19,20,21], 'rafts1':[1,2,3,4,5,6,9,10,14]},
+               'C':{'rafts2':[2,5,6,7,9,10,11,12,13,15,16,17,20], 'rafts1':[1,3,4,8,14,18,19,21]},
+               'D':{'rafts2':[1,2,3,4,6,8,9,10,12,13,14,16,18,19,20,21], 'rafts1':[5,7,11,15,17]},
+               'E':{'rafts2':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts1':[6,10,11,12,16]},
+               'F':{'rafts2':[1,2,3,4,5,7,8,9,13,14,15,17,18,19,20,21], 'rafts1':[6,10,11,12,16]}
 }
+
+
 #     19 20 21
 #  14 15 16 17 18
 #  9  10 11 12 13
@@ -180,9 +194,9 @@ for year,nw in zip(years,nightWheres):
 
 bg = metricBundles.makeBundlesDictFromList(bundleList)
 group = metricBundles.MetricBundleGroup(bg, opsdb, outDir=outDir, resultsDb=resultsDb)
-#group.runAll()
-#group.plotAll()
-group.readAll()
+group.runAll()
+group.plotAll()
+#group.readAll()
 
 
 ph = plots.PlotHandler(outDir=outDir, resultsDb=resultsDb)
