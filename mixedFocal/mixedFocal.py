@@ -143,10 +143,20 @@ for year,nw in zip(years,nightWheres):
         sql += nw
 
         metric = metrics.Coaddm5Metric(metricName='All Vendor 1, year %i' % year)
-        bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+        plotDict = {'label':'Vendor 1, year %i' % year, 'legendloc':'lower right'}
+        bundle = metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats, plotDict=plotDict)
+        bundle.year = year
+        bundle.filterName = filterName
+        bundle.config = 'Vendor 1'
+        bundleList.append(bundle)
 
         metric = metrics.Coaddm5Metric(m5Col='v2fiveSigmaDepth', metricName='All Vendor 2, year %i' % year)
-        bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+        plotDict = {'label':'Vendor 2, year %i' % year, 'legendloc':'lower right'}
+        bundle = metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats, plotDict=plotDict)
+        bundle.year = year
+        bundle.filterName = filterName
+        bundle.config = 'Vendor 2'
+        bundleList.append(bundle)
 
 
 
@@ -156,13 +166,32 @@ for year,nw in zip(years,nightWheres):
             metric = MixedM5Metric(metricName='MixedM5 config %s, year %i' % (raftConfig,year),
                                    **raftConfigs[raftConfig])
             sql = 'filter="%s"' % filterName
-            sql+= ' and '+wfdWhere
+            sql += ' and '+wfdWhere
             sql += nw
-            bundleList.append(metricBundles.MetricBundle(metric,slicer,sql, summaryMetrics=summaryStats))
+            plotDict = {'label':'Config %s, year %i' % (raftConfig, year), 'legendloc':'lower right'}
+            bundle = metricBundles.MetricBundle(metric,slicer,sql,
+                                                summaryMetrics=summaryStats, plotDict=plotDict)
+            bundle.year = year
+            bundle.filterName = filterName
+            bundle.config = raftConfig
+            bundleList.append(bundle)
 
 
 
 bg = metricBundles.makeBundlesDictFromList(bundleList)
 group = metricBundles.MetricBundleGroup(bg, opsdb, outDir=outDir, resultsDb=resultsDb)
-group.runAll()
-group.plotAll()
+#group.runAll()
+#group.plotAll()
+group.readAll()
+
+
+ph = plots.PlotHandler(outDir=outDir, resultsDb=resultsDb)
+
+for year in years:
+    for filterName in filters:
+        bl = []
+        for bundle in bundleList:
+            if (bundle.year == year) & (bundle.filterName == filterName):
+                bl.append(bundle)
+        ph.setMetricBundles(bl)
+        ph.plot(plotFunc=plots.HealpixPowerSpectrum())
