@@ -15,7 +15,6 @@ opsdb = db.OpsimDatabase(database)
 outDir = 'Camera'
 resultsDb = db.ResultsDb(outDir=outDir)
 
-
 rafts = ['R:0,1', 'R:0,2', 'R:0,3',
          'R:1,0', 'R:1,1', 'R:1,2', 'R:1,3', 'R:1,4',
          'R:2,0', 'R:2,1', 'R:2,2', 'R:2,3', 'R:2,4',
@@ -48,13 +47,32 @@ for raft in rafts2:
         chips2.append(raft+' '+sensor)
 
 
-nside = 8
+nside = 512
 
-metric = metrics.CountMetric(col='expMJD')
+bundleList = []
+
+metric = metrics.CountMetric(col='expMJD', metricName='Vendor1')
 slicer = slicers.HealpixSlicer(nside=nside, useCamera=True, chipNames=chips1)
-sql='night < 100 and filter="r"'
+sql='night < 20 and filter="r"'
 bundle = metricBundles.MetricBundle(metric,slicer,sql)
-bg = metricBundles.MetricBundleGroup({0:bundle}, opsdb,
+bundleList.append(bundle)
+metric = metrics.CountMetric(col='expMJD', metricName='Vendor2')
+
+bd = metricBundles.makeBundlesDictFromList(bundleList)
+bg = metricBundles.MetricBundleGroup(bd, opsdb,
+                                     outDir=outDir, resultsDb=resultsDb)
+bg.runAll()
+bg.plotAll()
+
+# I seem to be getting identical results if I run these together--Check to see if it changes breaking them up.
+# I suspect the slicer comparison isn't working properly again.
+bundleList = []
+slicer = slicers.HealpixSlicer(nside=nside, useCamera=True, chipNames=chips2)
+bundle = metricBundles.MetricBundle(metric,slicer,sql)
+bundleList.append(bundle)
+
+bd = metricBundles.makeBundlesDictFromList(bundleList)
+bg = metricBundles.MetricBundleGroup(bd, opsdb,
                                      outDir=outDir, resultsDb=resultsDb)
 bg.runAll()
 bg.plotAll()
