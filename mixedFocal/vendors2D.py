@@ -149,7 +149,7 @@ for extra in extras:
         bg.runAll()
         bg.plotAll(closefigs=True)
 
-        nLimits = [2,4,8,16]
+        nLimits = [2,4,8,16,32]
         pix2area = hp.nside2pixarea(nside, degrees=True)
         for bundle in bundleList:
             fig = plt.figure()
@@ -164,7 +164,7 @@ for extra in extras:
             ax.set_ylabel('Area with at least N visits (sq deg)')
             ax.set_ylim([0,20000])
             handles, labels = ax.get_legend_handles_labels()
-            ax.legend(handles, labels, loc='upper left')
+            ax.legend(handles, labels, loc='lower right')
             ax.set_title(bundle.metadata)
             filename = outDir+'/%s' % 'timeEvo'+'_'+bundle.metadata.replace(' ','').replace(',','_')+'.png'
             fig.savefig(filename)
