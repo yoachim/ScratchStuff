@@ -93,9 +93,9 @@ for raft in rafts2:
 
 
 
-bundleList=[]
 filters = ['u','g','r','i','z','y']
-year = 1 # 10
+filters = ['u']
+year =  10
 nside = 16
 
 extras = ['None', 'dither', 'rotation']
@@ -107,8 +107,8 @@ for extra in extras:
         lonCol = 'ditheredRA'
         md += ' Dithered,'
     else:
-        latCol = 'Ra'
-        lonCol = 'Dec'
+        latCol = 'fieldRA'
+        lonCol = 'fieldDec'
 
     if extra == 'rotation':
         rotSkyPosColName = 'rotatedRotSkyPos'
@@ -118,7 +118,7 @@ for extra in extras:
 
 
     for filterName in filters:
-
+        bundleList=[]
         mdf = md+' %s,' % filterName
 
         sql = 'filter="%s" and night < %i' % (filterName,year*365.25)
@@ -162,11 +162,12 @@ for extra in extras:
                 nHp = np.sum(nHp, axis=0)
                 ax.plot(bins,nHp*pix2area, label='%i' % limit)
             ax.set_xlabel('Night')
-            ax.set_ylabel('Area (sq deg)')
+            ax.set_ylabel('Area with at least N visits (sq deg)')
+            ax.set_ylim([0,20000])
             handles, labels = ax.get_legend_handles_labels()
             ax.legend(handles, labels, loc='upper left')
             ax.set_title(bundle.metadata)
-            filename = outDir+'/%s' % 'timeEvo_'+filterName+'_'+bundle.metadata.replace(' ','').replace(',','_')
+            filename = outDir+'/%s' % 'timeEvo'+'_'+bundle.metadata.replace(' ','').replace(',','_')+'.png'
             fig.savefig(filename)
             print 'Made file %s' % filename
             plt.close(fig)
