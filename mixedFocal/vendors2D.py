@@ -94,7 +94,6 @@ for raft in rafts2:
 
 
 filters = ['u','g','r','i','z','y']
-filters = ['u']
 year =  10
 nside = 16
 
