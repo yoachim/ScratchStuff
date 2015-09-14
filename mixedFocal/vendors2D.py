@@ -53,7 +53,6 @@ class RotPairStacker(BaseStacker):
 
 
 
-
 database = 'enigma_1189_sqlite.db'
 opsdb = db.OpsimDatabase(database)
 outDir = '2DCamera'
@@ -95,6 +94,9 @@ for raft in rafts2:
 
 filters = ['u','g','r','i','z','y']
 year =  10
+
+read = False
+
 nside = 16
 
 extras = ['None', 'dither', 'rotation']
@@ -106,8 +108,8 @@ for extra in extras:
         lonCol = 'ditheredRA'
         md += ' Dithered,'
     else:
-        latCol = 'fieldRA'
-        lonCol = 'fieldDec'
+        latCol = 'fieldDec'
+        lonCol = 'fieldRA'
 
     if extra == 'rotation':
         rotSkyPosColName = 'rotatedRotSkyPos'
@@ -146,7 +148,10 @@ for extra in extras:
         bd = metricBundles.makeBundlesDictFromList(bundleList)
         bg = metricBundles.MetricBundleGroup(bd, opsdb,
                                              outDir=outDir, resultsDb=resultsDb)
-        bg.runAll()
+        if read:
+            bg.readAll()
+        else:
+            bg.runAll()
         bg.plotAll(closefigs=True)
 
         nLimits = [2,4,8,16,32]
@@ -162,7 +167,7 @@ for extra in extras:
                 ax.plot(bins,nHp*pix2area, label='%i' % limit)
             ax.set_xlabel('Night')
             ax.set_ylabel('Area with at least N visits (sq deg)')
-            ax.set_ylim([0,20000])
+            ax.set_ylim([0,25000])
             handles, labels = ax.get_legend_handles_labels()
             ax.legend(handles, labels, loc='lower right')
             ax.set_title(bundle.metadata)
