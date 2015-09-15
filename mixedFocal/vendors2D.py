@@ -130,6 +130,7 @@ for extra in extras:
                                          latCol=latCol, lonCol=lonCol,
                                          rotSkyPosColName=rotSkyPosColName)
         bundle = metricBundles.MetricBundle(metric,slicer,sql, metadata=mdf+'Single Vendor')
+        bundle.Single=True
         bundleList.append(bundle)
 
         slicer = slicers.Healpix2dSlicer(nside=nside, bins=bins, useCamera=True, chipNames=chips1,
@@ -157,17 +158,24 @@ for extra in extras:
         nLimits = [2,4,8,16,32]
         pix2area = hp.nside2pixarea(nside, degrees=True)
         for bundle in bundleList:
+            if hasattr(bundle,'Single'):
+                refBundle = bundle
+        for bundle in bundleList:
             fig = plt.figure()
             ax = fig.add_subplot(111)
             for limit in nLimits:
                 good = np.where(bundle.metricValues > limit)
+                goodRef = np.where(refBundle.metricValues > limit)
+                nRef = np.zeros(bundle.metricValues.shape)
+                nRef[goodRef] = 1.
+                nRef = np.sum(nRef, axis=0)
                 nHp = np.zeros(bundle.metricValues.shape)
                 nHp[good] = 1.
                 nHp = np.sum(nHp, axis=0)
-                ax.plot(bins,nHp*pix2area, label='%i' % limit)
+                ax.plot(bins,nHp/nRef, label='%i' % limit)
             ax.set_xlabel('Night')
-            ax.set_ylabel('Area with at least N visits (sq deg)')
-            ax.set_ylim([0,35000])
+            ax.set_ylabel('Area/Single Vendor Area')
+            #ax.set_ylim([0,35000])
             handles, labels = ax.get_legend_handles_labels()
             ax.legend(handles, labels, loc='lower right')
             ax.set_title(bundle.metadata)
