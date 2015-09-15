@@ -95,7 +95,7 @@ for raft in rafts2:
 filters = ['u','g','r','i','z','y']
 year =  10
 
-read = False
+read = True
 
 nside = 16
 
@@ -167,7 +167,7 @@ for extra in extras:
                 ax.plot(bins,nHp*pix2area, label='%i' % limit)
             ax.set_xlabel('Night')
             ax.set_ylabel('Area with at least N visits (sq deg)')
-            ax.set_ylim([0,25000])
+            ax.set_ylim([0,35000])
             handles, labels = ax.get_legend_handles_labels()
             ax.legend(handles, labels, loc='lower right')
             ax.set_title(bundle.metadata)
