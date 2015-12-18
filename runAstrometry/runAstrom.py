@@ -9,8 +9,8 @@ import healpy as hp
 # Run the Astrometry metics on a number of runs
 
 runNames = ['enigma_1189', 'ops2_1093']
-#nside = 64
-nside = 4
+nside = 64
+
 slicer = slicers.HealpixSlicer(nside=nside)
 
 # Make it so we don't bother with the silly power spectra
