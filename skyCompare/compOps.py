@@ -10,7 +10,8 @@ stride = 100
 
 opsdb = db.OpsimDatabase('ewok_1004_sqlite.db')
 sql = ''
-data = opsdb.fetchMetricData(['expMJD','filter','fieldRA','fieldDec','filtSkyBrightness'], sql)
+data = opsdb.fetchMetricData(['expMJD','filter','fieldRA','fieldDec',
+                              'filtSkyBrightness', 'airmass', 'dist2Moon', 'moonAlt'], sql)
 data = data[::stride]
 
 
@@ -32,10 +33,10 @@ keys = ['u','g','r','i','z','y']
 print 'filter, median OpSim, median ESO'
 for i,key in enumerate(keys):
     good = np.where((data['filter'] == key) & (mysky != 0))
-    axes[i].plot(data['filtSkyBrightness'][good],data['filtSkyBrightness'][good]-mysky[good], 'ko', alpha=.1)
+    axes[i].plot(mysky[good],data['filtSkyBrightness'][good]-mysky[good], 'ko', alpha=.1)
     axes[i].set_title(r'$'+key+'$')
     axes[i].set_ylabel(r'$\mu_{OpSim}-\mu_{ESO}$')
-    axes[i].set_xlabel(r'$\mu_{OpSim}$')
+    axes[i].set_xlabel(r'$\mu_{ESO}$')
     axes[i].invert_xaxis()
     axes[i].tick_params(axis='x', labelsize=7)
     axes[i].xaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
@@ -46,3 +47,50 @@ for i,key in enumerate(keys):
 
 fig.tight_layout()
 fig.savefig('skycompare.png')
+
+
+key = 'z'
+good = np.where((data['filter'] == key) & (mysky != 0))
+fig,ax = plt.subplots()
+
+ack = ax.scatter(data['airmass'][good],mysky[good],  c=np.degrees(data['dist2Moon'][good]), alpha=.1 )
+cb = plt.colorbar(ack)
+ax.invert_yaxis()
+ax.set_title('ESO $z$')
+ax.set_ylabel('$\mu_{ESO}$')
+ax.set_xlabel('Airmass')
+cb.set_label('Degrees to Moon')
+
+fig.savefig('zband_eso.png')
+
+fig,ax = plt.subplots()
+
+ack = ax.scatter(data['airmass'][good],  data['filtSkyBrightness'][good],
+                    c=np.degrees(data['dist2Moon'][good]), alpha=.1 )
+cb = plt.colorbar(ack)
+ax.invert_yaxis()
+ax.set_title('OpSim $z$')
+ax.set_ylabel('$\mu_{OpSim}$')
+ax.set_xlabel('Airmass')
+cb.set_label('Degrees to Moon')
+
+fig.savefig('zband_opsim.png')
+
+plt.close('all')
+
+fig,ax = plt.subplots()
+
+ax.hist(np.degrees(data['dist2Moon'][good]), bins=50)
+ax.set_xlabel('Distance to Moon')
+ax.set_title('$z$')
+ax.set_ylabel('# of Visits')
+fig.savefig('zd2moon.png')
+plt.close(fig)
+
+fig,ax = plt.subplots()
+ax.plot(np.degrees(data['moonAlt'][good]),np.degrees(data['dist2Moon'][good]),'ko', alpha=.1)
+ax.set_xlabel('Moon Altitude (degrees)')
+ax.set_title('$z$')
+ax.set_ylabel('Distance to the Moon (degrees)')
+fig.savefig('zmoonaltmoond.png')
+plt.close(fig)
