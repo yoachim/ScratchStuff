@@ -276,3 +276,14 @@ if __name__ == '__main__':
         healbinImage(filename, coords['x'],coords['y'], alt, az, f)
 
     f.close()
+
+
+    # make sure we can read the data back in and get a good image
+    names = ['hpid', 'mag', 'airmass', 'mjd']
+    dt = [int, float, float, float]
+    data = np.loadtxt('testOut.dat', dtype=zip(names, dt), delimiter=',', skiprows=1)
+    nside = 32
+    imback = np.zeros(hp.nside2npix(nside))+hp.UNSEEN
+    imback[data['hpid']] = data['mag']
+
+    hp.mollview(imback, rot=(-np.degrees(lst), np.degrees(obs.lat),0))
