@@ -1,0 +1,60 @@
+Summary_Name;kraken_1042;minion_1012;minion_1016
+NVisits All Visits;2447467.0;2421933.0;2447931.0
+Fraction of total NVisits NorthEclipticSpur-18c;0.0649291696272;nan;0.0649168624442
+Fraction of total NVisits WFD;0.850364478867;1.0;0.851232326401
+Fraction of total NVisits Universal-18-0824;nan;1.0;nan
+Fraction of total NVisits SouthCelestialPole-18;0.0215488094426;nan;0.0215447249126
+Fraction of total NVisits GalacticPlane;0.0169154476853;nan;0.016912241399
+Fraction of total NVisits DDcosmology1;0.0463887766413;nan;0.0455372312373
+Fraction of total NVisits Universal-18-0824B;0.850364478867;nan;0.851232326401
+(days) Total effective time of survey All Visits;284.674495742;304.211264513;285.451723601
+(days) Nights with observations All Visits;3026.0;3025.0;3026.0
+Median NVisits Per night OneDSlicer;816.0;807.0;816.0
+Median OpenShutterFraction Per night OneDSlicer;0.734863058799;0.729452654272;0.734691657926
+Mean slewTime All Visits;6.82766506364;7.23858778257;6.82073495039
+Mean NVisits u band, all props OpsimFieldSlicer;64.1785587504;71.7745311819;64.3773517927
+Mean NVisits g band, all props OpsimFieldSlicer;74.0437518729;102.136938509;73.9187893317
+Mean NVisits r band, all props OpsimFieldSlicer;161.751722072;231.411687745;161.339622642
+Mean NVisits i band, all props OpsimFieldSlicer;162.016771488;232.281290885;162.230607966
+Mean NVisits z band, all props OpsimFieldSlicer;147.524408506;210.232010467;147.710691824
+Mean NVisits y band, all props OpsimFieldSlicer;158.304934327;208.39249891;158.433084842
+Median NVisits u band, all props OpsimFieldSlicer;62.0;67.0;62.0
+Median NVisits g band, all props OpsimFieldSlicer;87.0;95.0;87.0
+Median NVisits r band, all props OpsimFieldSlicer;197.0;216.0;197.0
+Median NVisits i band, all props OpsimFieldSlicer;197.0;216.0;198.0
+Median NVisits z band, all props OpsimFieldSlicer;178.0;192.0;179.0
+Median NVisits y band, all props OpsimFieldSlicer;179.0;191.0;180.0
+fONv: Area (sqdeg) fO All Visits (non-dithered) HealpixSlicer;18059.081364;18040.6169038;18059.081364
+fOArea: Nvisits (#) fO All Visits (non-dithered) HealpixSlicer;885.0;966.0;888.0
+Median FWHMeff r band, all props;0.943062;0.918846;0.933411
+Median airmass r band, all props;1.22448;1.195143;1.228228
+Median Proper Motion 20 All Visits (non-dithered) HealpixSlicer;0.174524191571;0.164251789046;0.173992694852
+Median Proper Motion 24 All Visits (non-dithered) HealpixSlicer;2.30872027299;1.9971274132;2.27527331256
+Median fiveSigmaDepth u band, WFD;23.146446;23.169337;23.137883
+Median fiveSigmaDepth g band, WFD;24.4659755;24.459492;24.472729
+Median fiveSigmaDepth r band, WFD;24.149509;24.156039;24.153684
+Median fiveSigmaDepth i band, WFD;23.4013205;23.436856;23.392901
+Median fiveSigmaDepth z band, WFD;22.215558;22.3071855;22.223935
+Median fiveSigmaDepth y band, WFD;21.571935;21.580277;21.571697
+Median NVisits u band, WFD OpsimFieldSlicer;62.0;67.0;62.0
+Median NVisits g band, WFD OpsimFieldSlicer;88.0;95.0;88.0
+Median NVisits r band, WFD OpsimFieldSlicer;200.0;216.0;199.0
+Median NVisits i band, WFD OpsimFieldSlicer;200.0;216.0;201.0
+Median NVisits z band, WFD OpsimFieldSlicer;180.0;192.0;180.0
+Median NVisits y band, WFD OpsimFieldSlicer;180.0;191.0;180.0
+Median CoaddM5 u band, WFD OpsimFieldSlicer;25.4561781962;25.5439771482;25.4483128747
+Median CoaddM5 g band, WFD OpsimFieldSlicer;26.9494109968;27.0001538441;26.9571410942
+Median CoaddM5 r band, WFD OpsimFieldSlicer;27.0745406128;27.1400524785;27.0825810532
+Median CoaddM5 i band, WFD OpsimFieldSlicer;26.3526069556;26.4389941522;26.3511541092
+Median CoaddM5 z band, WFD OpsimFieldSlicer;25.1905381663;25.3437465159;25.2083635853
+Median CoaddM5 y band, WFD OpsimFieldSlicer;24.4284837642;24.4887081318;24.4291088586
+fONv: Area (sqdeg) fO WFD only (non-dithered) HealpixSlicer;18040.6169038;18040.6169038;18040.6169038
+fOArea: Nvisits (#) fO WFD only (non-dithered) HealpixSlicer;885.0;966.0;888.0
+Median FWHMeff r band, WFD;0.922897;0.918846;0.912146
+Median FWHMeff i band, WFD;0.884693;0.89161;0.8901795
+Median filtSkyBrightness u band, WFD;22.044;22.05497;22.047386
+Median filtSkyBrightness r band, WFD;21.076655;21.082807;21.071279
+Median filtSkyBrightness y band, WFD;17.3;17.3;17.3
+Median airmass u band, WFD;1.250754;1.231223;1.246322
+Median airmass r band, WFD;1.198451;1.195143;1.201607
+Median airmass y band, WFD;1.255893;1.2410385;1.2581205
