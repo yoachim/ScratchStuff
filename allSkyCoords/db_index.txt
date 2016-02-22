@@ -1,0 +1,5 @@
+# Commands to add helpful indexes to the
+
+CREATE INDEX mjd_index on medskybrightness (mjd);
+CREATE INDEX hpindex_index on medskybrightness (hpindex);
+CREATE INDEX airmass_index on medskybrightness (airmass);
