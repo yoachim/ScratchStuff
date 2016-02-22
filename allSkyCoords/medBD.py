@@ -8,7 +8,21 @@ import healpy as hp
 
 def medDB(where_clause=None, full_select = None, dtypes=None):
     """
+    Read in the median binned all-sky camera data
 
+    Parameters
+    ----------
+    where_clause: str (None)
+        The where-cluase of the sql query
+    full_select: str (None)
+        A full sql-select string
+    dtype: list (None)
+        A list of dtypes that match the outputs from `full_select`
+
+    Returns
+    -------
+    data: numpy.array
+        A numpy array with the results from the database
     """
 
     if full_select is None:
