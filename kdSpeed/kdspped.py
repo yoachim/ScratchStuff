@@ -5,10 +5,7 @@ import healpy as hp
 
 # Check the speed of the scipy kdtree
 
-def test_tree_time():
-
-
-	random_postions = False
+def test_tree_time(random_postions=True):
 
 	def tree_xyz(lat, lon):
 		"""
@@ -35,11 +32,7 @@ def test_tree_time():
 		lat = lat[0:npts]
 		lon = lon[0:npts]
 
-
 	x, y, z = tree_xyz(lat, lon)
-
-
-
 
 	# Postiions to search on
 	nside = 128
@@ -61,9 +54,11 @@ def test_tree_time():
 	for px, py, pz in zip(pos_x, pos_y, pos_z):
 		indices = tree.query_ball_point((px, py, pz), search_rad)
 		found_points += len(indices)
-	print 'found %i points' % found_points
+	# print 'found %i points' % found_points
 
 if __name__ == "__main__":
 	import timeit
 	print 'scipy version', scipy.__version__
-	print timeit.timeit("test_tree_time()", setup="from __main__ import test_tree_time", number=3)
+
+	print 'random positions ', timeit.timeit("test_tree_time(random_postions=True)", setup="from __main__ import test_tree_time", number=3), 'seconds'
+	print 'repeat positions ', timeit.timeit("test_tree_time(random_postions=False)", setup="from __main__ import test_tree_time", number=3), 'seconds'
