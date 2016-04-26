@@ -16,7 +16,7 @@ def test_tree_time(random_postions=True):
 		z = np.sin(lat)
 		return x, y, z
 
-	npts = 1e6
+	npts = 3e6
 	np.random.seed(42)
 	if random_postions:
 		# random points on a sphere. 
