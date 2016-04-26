@@ -7,6 +7,9 @@ import healpy as hp
 
 def test_tree_time():
 
+
+	random_postions = False
+
 	def tree_xyz(lat, lon):
 		"""
 		convert positions on a sphere to 3d coordinates
@@ -18,10 +21,25 @@ def test_tree_time():
 
 	npts = 1e6
 	np.random.seed(42)
-	# random points on a sphere. 
-	lat = np.arccos(2.*np.random.uniform(low=0, high=1, size=npts) - 1.) - np.pi/2.
-	lon = np.random.uniform(low=0, high=2*np.pi, size=npts)
+	if random_postions:
+		# random points on a sphere. 
+		lat = np.arccos(2.*np.random.uniform(low=0, high=1, size=npts) - 1.) - np.pi/2.
+		lon = np.random.uniform(low=0, high=2*np.pi, size=npts)
+		
+	else:
+		nside = 16
+		lat, lon = hp.pix2ang(nside, np.arange(hp.nside2npix(nside)))
+		npix = lat.size
+		lat = np.repeat(lat, np.ceil(npts/npix))
+		lon = np.repeat(lon, np.ceil(npts/npix))
+		lat = lat[0:npts]
+		lon = lon[0:npts]
+
+
 	x, y, z = tree_xyz(lat, lon)
+
+
+
 
 	# Postiions to search on
 	nside = 128
