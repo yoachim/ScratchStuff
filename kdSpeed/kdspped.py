@@ -16,13 +16,13 @@ def test_tree_time(random_postions=True):
 		z = np.sin(lat)
 		return x, y, z
 
-	npts = 1e6
+	npts = 3e6
 	np.random.seed(42)
 	if random_postions:
-		# random points on a sphere. 
+		# random points on a sphere.
 		lat = np.arccos(2.*np.random.uniform(low=0, high=1, size=npts) - 1.) - np.pi/2.
 		lon = np.random.uniform(low=0, high=2*np.pi, size=npts)
-		
+
 	else:
 		nside = 16
 		lat, lon = hp.pix2ang(nside, np.arange(hp.nside2npix(nside)))
