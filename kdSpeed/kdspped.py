@@ -16,6 +16,7 @@ def test_tree_time(random_postions=True):
         z = np.sin(lat)
         return x, y, z
 
+
     npts = 3e6
     np.random.seed(42)
     if random_postions:
@@ -62,6 +63,9 @@ if __name__ == "__main__":
     print 'scipy version', scipy.__version__
 
     print 'random positions ', timeit.timeit("test_tree_time(random_postions=True)",
-                                             setup="from __main__ import test_tree_time", number=3), 'seconds'
+                                             setup="from __main__ import test_tree_time",
+                                             number=3), 'seconds'
+
     print 'repeat positions ', timeit.timeit("test_tree_time(random_postions=False)",
-                                             setup="from __main__ import test_tree_time", number=3), 'seconds'
+                                             setup="from __main__ import test_tree_time",
+                                             number=3), 'seconds'
