@@ -27,10 +27,33 @@ good = np.where(((field_data['ra'] <= ra_range) | (field_data['ra'] >= 360.-ra_r
 
 field_data = field_data[good]
 
+def rotate_around_ra_dec(ra, dec, ra_rotation, dec_rotaion):
+    """
+    Rotate Ra,dec points around a specified axis.
+
+    handy sheet here:
+    http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/ArbitraryAxisRotation.pdf
+    """
+
+
+
+
 
 def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
     """
-    rotate some x,y,z positions
+    Rotate ra and dec coordinates to be centered on a new ra and dec.
+    Coords are rotated first in dec, then in RA.
+
+    Inputs
+    ------
+    ra : float or np.array
+        RA coordinate(s) to be rotated in radians
+    dec : float or np.array
+        Dec coordinate(s) to be rotated in radians
+    ra_rotation : float
+        RA distance to rotate in radians
+    dec_rotation : float
+        Dec distance to rotate in radians
     """
 
     # OK, rotating to the correct ra is a rotation around the z axis
@@ -39,7 +62,7 @@ def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
 
     # proint (ra,dec) = (0,0) is at x,y,z = 1,0,0
 
-    x, y, z = _treexyz(ra, dec)
+    x, y, z = ra_dec_2_xyx(ra, dec)
 
     theta_y = dec_rotation
     theta_z = ra_rotation
@@ -59,10 +82,13 @@ def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
     return ra_p, dec_p
 
 
-def _treexyz(ra, dec):
+def ra_dec_2_xyx(ra, dec):
         """Calculate x/y/z values for ra/dec points, ra/dec in radians."""
         # Note ra/dec can be arrays.
         x = np.cos(dec) * np.cos(ra)
         y = np.cos(dec) * np.sin(ra)
         z = np.sin(dec)
         return x, y, z
+
+# genenate a bunch of fields. make arrays that shift them by d_ra, d_dec, d_theta.  
+# Fit the peak to find the best d_ra, d_dec, d_theta.
