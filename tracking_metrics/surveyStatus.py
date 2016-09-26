@@ -74,6 +74,8 @@ class SurveyStatusSky(BaseSurveyStatus):
         self.nside = nside
         self.footprint = footprint
         self.survey_map = np.zeros(hp.nside2npix(self.nside), dtype=dtype)
+        # Keep a count of how many total visits have been added
+        self.visit_counter = 0
         pass
 
     def __eq__(self, other_survey):
@@ -90,11 +92,16 @@ class SurveyStatusSky(BaseSurveyStatus):
     def add_visit(self, visit, pixels=None):
         if pixels is None:
             pixels = self.find_pixels(visit)
+
+        self.visit_counter += 1
         pass
 
     def remove_visit(self, visit, pixels=None):
+        # Hmm, this makes sense for things like count, but min/max will be hard since we would need a cache of previous values.
         if pixels is None:
             pixels = self.observed_healpixels(visit)
+
+        self.visit_counter -= 1
         pass
 
     def save(self, filename=None):
@@ -104,6 +111,75 @@ class SurveyStatusSky(BaseSurveyStatus):
 
     def return_survey_map(self):
         return self.survey_map
+
+
+class countFilterStatus(SurveyStatusSky):
+    def __init__(self, nside=64, dtype=int, status_name=None,
+                 filter_name=['r'], footprint='D3.5'):
+        super(countFilterStatus, self).__init__(nside=nside, dtype=dtype,
+                                                status_name=None)
+        self.filter_names = filter_name
+
+    def add_visit(self, visit, pixels):
+        if visit.filter_name in self.filter_name:
+            self.survey_map[pixels] += 1
+        self.visit_counter += 1
+
+
+class CoaddM5Status(SurveyStatusSky):
+    def __init__(self, nside=64, dtype=float, status_name=None,
+                 filter_name='r', footprint='D3.5'):
+
+        super(CoaddM5Status, self).__init__(nside=nside, dtype=dtype,
+                                            status_name=None)
+        self.filter_name = filter_name
+        self.flux_map = np.zeros(hp.nside2npix(self.nside), dtype=dtype)
+
+    def add_visit(self, visit, pixels=None):
+        if pixels is None:
+            pixels = self.find_pixels(visit)
+        if visit.filter_name == self.filter_name:
+            self.flux_map[pixels] += 10.**(0.8*visit.fivesigmadepth)
+            self.survey_map[pixels] = 1.25 * np.log10(self.flux_map[pixels])
+        self.visit_counter += 1
+
+
+class HasTemplateStatus(SurveyStatusSky):
+    """
+    track if there is a good template for a given helpixel
+    """
+    def __init__(self, nside=64, dtype=bool, status_name=None,
+                 filter_name='r', max_seeing=0.8, min_m5=23.,
+                 footprint='D3.5'):
+
+        super(HasTemplateStatus, self).__init__(nside=nside, dtype=dtype,
+                                                status_name=None)
+        self.max_seeing = max_seeing
+        self.min_m5 = min_m5
+        self.filter_name = filter_name
+
+    def add_visit(self, visit, pixels=None):
+        if pixels is None:
+            pixels = self.find_pixels(visit)
+        if visit.filter_name == self.filter_name:
+            if (visit.seeing <= self.max_seeing) & (visit.fivesigmadepth >= self.min_m5):
+                self.survey_map[pixels] = True
+        self.visit_counter += 1
+
+
+class LastObserved(SurveyStatusSky):
+    def __init__(self, nside=64, dtype=float, status_name=None,
+                 filter_name='any', footprint='D3.5'):
+        super(LastObserved, self).__init__(nside=nside, dtype=dtype,
+                                           status_name=None)
+        self.filter_name = filter_name
+
+    def add_visit(self, visit, pixels=None):
+        if pixels is None:
+            pixels = self.find_pixels(visit)
+        if (visit.filter_name == self.filter_name) | (self.filter_name == 'any'):
+            self.survey_map[pixels] = np.maximum(self.survey_map[pixels], visit.mjd)
+        self.visit_counter += 1
 
 
 class WeightedSky(BaseSurveyStatus):
@@ -126,11 +202,13 @@ class HistSky(BaseSurveyStatus):
     def __init__(self, nside=64, bins=None, dtype=float, status_name=None):
         super(HistSky, self).__init__(nside=nside, dtype=dtype,
                                       status_name=None)
+
         if bins is None:
             self.bins = np.arange(11)
         else:
             self.bins = np.array(bins)
         self.nbins = bins.size
+        self.survey_map = np.zeros((hp.nside2npix(self.nside), self.nbins-1), dtype=dtype)
 
     def add_visit(self, visit, pixels=None):
         pass
@@ -140,4 +218,23 @@ class HistSky(BaseSurveyStatus):
         pass
 
 
+class RotationHistSky(HistSky):
+    """
+    Keep track of what rotation angles have been used
+    """
+
+    def __init__(self, nside=64, bins=None, filter_names=['u', 'g', 'r', 'i', 'z', 'y'],
+                 dtype=float, status_name=None):
+        super(RotationHistSky, self).__init__(nside=nside, dtype=dtype,
+                                              status_name=None)
+        self.filter_names = filter_names
+        if bins is None:
+            bins = np.linspace(0., 2.*np.pi, 8.)
+
+    def add_visit(self, visit, pixels=None):
+        if pixels is None:
+            pixels = self.find_pixels(visit)
+        if visit.filter_name in self.filter_names:
+            index = np.searchsorted(self.bins, visit.rotskypos, side='right')
+            self.survey_map[pixels, index] += 1
 
