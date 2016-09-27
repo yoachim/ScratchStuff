@@ -9,7 +9,7 @@ Take the current sky status and survey status and generate a list of pointings
 
 class scheduler(object):
 
-    def __init__(self, modes=None, nside=64):
+    def __init__(self, modes=None, nside=128):
         """
         Parameters
         ----------
@@ -23,12 +23,14 @@ class scheduler(object):
         self.statusList = []
         for mode in self.modes:
             for key in mode.requiredStatus:
+                matched = False
                 for status in self.statusList:
                     if mode.requiredStatus[key] == status:
                         # If we already have the status object, point the mode to look at that one
                         mode.requiredStatus[key] = status
-                    else:
-                        self.statusList.append(mode.requiredStatus[key])
+                        matched = True
+                if not matched:
+                    self.statusList.append(mode.requiredStatus[key])
 
     def add_visit(self, visit):
         """
@@ -44,4 +46,3 @@ class scheduler(object):
         # just based on fraction of observations
 
         pass
-        
