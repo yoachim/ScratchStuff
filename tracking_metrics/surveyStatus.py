@@ -53,7 +53,7 @@ if gap gets too large, flush queue and re-fill
 
 
 class HealpixLookup(object):
-    def __init__(self, nside=64, radius=1.75):
+    def __init__(self, nside=128, radius=1.75):
         hpindex = np.arange(hp.nside2npix(nside))
         ra, dec = _hpid2RaDec(nside, hpindex)
 
@@ -120,7 +120,7 @@ class SurveyStatusSky(BaseSurveyStatus):
     An object that tracks the progress of a survey
     """
 
-    def __init__(self, nside=64, dtype=float, status_name=None):
+    def __init__(self, nside=128, dtype=float, status_name=None):
 
         self.nside = nside
         self.survey_map = np.zeros(hp.nside2npix(self.nside), dtype=dtype)
@@ -163,7 +163,7 @@ class SurveyStatusSky(BaseSurveyStatus):
 
 
 class countFilterStatus(SurveyStatusSky):
-    def __init__(self, nside=64, dtype=int, status_name=None,
+    def __init__(self, nside=128, dtype=int, status_name=None,
                  filter_name=['r']):
         super(countFilterStatus, self).__init__(nside=nside, dtype=dtype,
                                                 status_name=None)
@@ -176,7 +176,7 @@ class countFilterStatus(SurveyStatusSky):
 
 
 class CoaddM5Status(SurveyStatusSky):
-    def __init__(self, nside=64, dtype=float, status_name=None,
+    def __init__(self, nside=128, dtype=float, status_name=None,
                  filter_name='r'):
 
         super(CoaddM5Status, self).__init__(nside=nside, dtype=dtype,
@@ -188,6 +188,7 @@ class CoaddM5Status(SurveyStatusSky):
         if visit.filter == self.filter_name:
             self.flux_map[pixels] += 10.**(0.8*visit.fiveSigmaDepth)
             self.survey_map[pixels] = 1.25 * np.log10(self.flux_map[pixels])
+            self.survey_map[np.where(self.flux_map == 0.)] = hp.UNSEEN
         self.visit_counter += 1
 
 
@@ -195,7 +196,7 @@ class HasTemplateStatus(SurveyStatusSky):
     """
     track if there is a good template for a given helpixel
     """
-    def __init__(self, nside=64, dtype=bool, status_name=None,
+    def __init__(self, nside=128, dtype=bool, status_name=None,
                  filter_name='r', max_seeing=0.8, min_m5=23.):
 
         super(HasTemplateStatus, self).__init__(nside=nside, dtype=dtype,
@@ -212,7 +213,7 @@ class HasTemplateStatus(SurveyStatusSky):
 
 
 class LastObserved(SurveyStatusSky):
-    def __init__(self, nside=64, dtype=float, status_name=None,
+    def __init__(self, nside=128, dtype=float, status_name=None,
                  filter_name='any'):
         super(LastObserved, self).__init__(nside=nside, dtype=dtype,
                                            status_name=None)
@@ -226,7 +227,10 @@ class LastObserved(SurveyStatusSky):
 
 
 class NightCount(SurveyStatusSky):
-    def __init__(self, nside=64, dtype=int, status_name=None,
+    """
+    Warning: Assumes visits are added in temporal order with oldest first.
+    """
+    def __init__(self, nside=128, dtype=int, status_name=None,
                  filter_name='any'):
         super(NightCount, self).__init__(nside=nside, dtype=dtype,
                                          status_name=None)
@@ -250,7 +254,7 @@ class NightCount(SurveyStatusSky):
 
 class WeightedSky(BaseSurveyStatus):
 
-    def __init__(self, nside=64, dtype=float, status_name=None):
+    def __init__(self, nside=128, dtype=float, status_name=None):
         super(WeightedSky, self).__init__(nside=nside, dtype=dtype,
                                           status_name=None)
 
@@ -265,7 +269,7 @@ class HistSky(SurveyStatusSky):
     Keep a histogram of values at each point in the sky that can be used
     to compute more compicated statistics.
     """
-    def __init__(self, nside=64, bins=None, dtype=float, status_name=None):
+    def __init__(self, nside=128, bins=None, dtype=float, status_name=None):
         super(HistSky, self).__init__(nside=nside, dtype=dtype,
                                       status_name=None)
 
@@ -285,7 +289,7 @@ class RotationHistSky(HistSky):
     Keep track of what rotation angles have been used
     """
 
-    def __init__(self, nside=64, bins=None, filter_names=['u', 'g', 'r', 'i', 'z', 'y'],
+    def __init__(self, nside=128, bins=None, filter_names=['u', 'g', 'r', 'i', 'z', 'y'],
                  dtype=float, status_name=None):
         if bins is None:
             bins = np.linspace(0., 2.*np.pi, 9.)
