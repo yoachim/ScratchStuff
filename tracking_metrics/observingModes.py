@@ -15,7 +15,7 @@ def BaseMode(object):
         self.requiredStatus = {}
 
     def visits_to_observe(self, observatory_status):
-        pass
+        pass   
 
 
 def DeepDrillingMode(BaseMode):
@@ -50,9 +50,9 @@ def m5map2reward(object):
         """
         
         """
-        
 
-def ScanMode(BaseMode):
+
+def SurveyMode(BaseMode):
     """
     Observing mode for raster scanning large contiguous regions of sky. Constructs a map
     of the sky in each filter weighting various considerations.
@@ -120,9 +120,20 @@ def ScanMode(BaseMode):
         # Add a bonus for the currently loaded filter
         reward_functions[observatory_status.current_filter] *= self.current_filter_bonus
 
+        #  Maybe as a starting point, just shift my grid over and keep the pointings that overlap good pixels
+        #  Later I can work out the best shift+rotation to add to tap down the
 
 
+def VariableConditionsMode(SurveyMode):
+    """
+    Use the same algorithm as ScanMode, but use different parameters if conditions are variable.
+    Could also use when there is limited time left before sun/moon rise/sets.
+    """
 
+    def visits_to_observe(self, observatory_status, m5_maps):
+        pass
+
+ 
 def TwilightMode(BaseMode):
     pass
 

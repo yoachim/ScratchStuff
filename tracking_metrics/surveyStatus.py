@@ -163,7 +163,7 @@ class SurveyStatusSky(BaseSurveyStatus):
 
 
 class countFilterStatus(SurveyStatusSky):
-    def __init__(self, nside=128, dtype=int, status_name=None,
+    def __init__(self, nside=128, dtype=float, status_name=None,
                  filter_name=['r']):
         super(countFilterStatus, self).__init__(nside=nside, dtype=dtype,
                                                 status_name=None)
@@ -230,7 +230,7 @@ class NightCount(SurveyStatusSky):
     """
     Warning: Assumes visits are added in temporal order with oldest first.
     """
-    def __init__(self, nside=128, dtype=int, status_name=None,
+    def __init__(self, nside=128, dtype=float, status_name=None,
                  filter_name='any'):
         super(NightCount, self).__init__(nside=nside, dtype=dtype,
                                          status_name=None)
