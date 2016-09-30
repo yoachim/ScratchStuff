@@ -2,17 +2,27 @@ import numpy as np
 from surveyStatus import HealpixLookup
 import healpy as hp
 
-def generate_taget_maps():
+def generate_taget_maps(nside=128):
     """
     Generate a suite of target depths for each filter
     """
+    target_median_depths = {'u': 26.1, 'g': 27.4, 'r': 27.5, 'i': 26.8, 'z': 26.1, 'y': 24.9}
+    nes_depth = {}
+    south_pole_depth = {}
+    galactic_plane_depth = {}
 
-    target_median_depths = {'u':}
+    all_filters = []
+    all_filters.extend(target_map.keys())
+    all_fitlers.extend(nes_depth.keys())
+    all_fitlers.extend(south_pole_depth.keys())
+    all_filters.extend(galactic_plane_depth.keys())
+    all_filters = list(set(all_filters))
 
 
-class simple_tesselate(object):
+class min_coadd_power_tesselate(object):
     """
-    Take a block of tesselated pointings and rotate them to a new spot
+    Take a block of tesselated pointings and rotate them to a new spot such that
+    the resulting power in the coadded depth map is minimized.
     """
     def __init__(self, nside=128):
         field_data = np.loadtxt('fieldID.dat', delimiter='|', skiprows=1,
@@ -30,13 +40,16 @@ class simple_tesselate(object):
         # put a kdtree in here
         self.kdtree = HealpixLookup(nside=nside)
 
-
-    def find_pointings(self, reward_map, m5_map):
+    def find_pointings(self, reward_map, m5_map, single_visit_depth=22.):
         """
         Paramters
         ---------
-        target_map : np.array
-            A healpix map where unmasked pixels should be tesselated with pointings
+        reward_map : np.array
+            A healpix map where unmasked pixels should be tesselated with pointings.
+        m5_map : np.array
+            A healpix map of the co-added 5-sigma limiting depth at each point.
+        single_visit_depth : float
+            The rough depth of a single visit.
         """
 
         # Check that target map is correct nside
