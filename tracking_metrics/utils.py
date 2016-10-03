@@ -47,7 +47,8 @@ class min_coadd_power_tesselate(object):
         reward_map : np.array
             A healpix map where unmasked pixels should be tesselated with pointings.
         m5_map : np.array
-            A healpix map of the co-added 5-sigma limiting depth at each point.
+            A healpix map of the co-added 5-sigma limiting depth at each point for the
+            current status of the survey.
         single_visit_depth : float
             The rough depth of a single visit.
         """
@@ -58,5 +59,5 @@ class min_coadd_power_tesselate(object):
         # Maybe just use the peak pixel and it's 8 neighbors and go with that?
         max_index = np.where(reward_map == np.max(reward_map))[0].max()
         peak_pixels = hp.get_all_neighbours(max_index)
-        
+
         target_ra, target_dec = 
