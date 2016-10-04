@@ -2,6 +2,36 @@ import numpy as np
 from surveyStatus import HealpixLookup
 import healpy as hp
 
+
+def wrapRADec(ra, dec):
+    # XXX--from MAF, should put in general utils
+    """
+    Wrap RA into 0-2pi and Dec into +/0 pi/2.
+
+    Parameters
+    ----------
+    ra : numpy.ndarray
+        RA in radians
+    dec : numpy.ndarray
+        Dec in radians
+
+    Returns
+    -------
+    numpy.ndarray, numpy.ndarray
+        Wrapped RA/Dec values, in radians.
+    """
+    # Wrap dec.
+    low = np.where(dec < -np.pi / 2.0)[0]
+    dec[low] = -1 * (np.pi + dec[low])
+    ra[low] = ra[low] - np.pi
+    high = np.where(dec > np.pi / 2.0)[0]
+    dec[high] = np.pi - dec[high]
+    ra[high] = ra[high] - np.pi
+    # Wrap RA.
+    ra = ra % (2.0 * np.pi)
+    return ra, dec
+
+
 def generate_taget_maps(nside=128):
     """
     Generate a suite of target depths for each filter
@@ -59,5 +89,5 @@ class min_coadd_power_tesselate(object):
         # Maybe just use the peak pixel and it's 8 neighbors and go with that?
         max_index = np.where(reward_map == np.max(reward_map))[0].max()
         peak_pixels = hp.get_all_neighbours(max_index)
-
-        target_ra, target_dec = 
+        pass
+        #target_ra, target_dec = 

@@ -62,6 +62,10 @@ def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
 
     # proint (ra,dec) = (0,0) is at x,y,z = 1,0,0
 
+
+    # XXXXX--wait, can't I just rotate the points around y-axis to get them all
+    # on the correct decs, then add the ra-offset?
+
     x, y, z = ra_dec_2_xyx(ra, dec)
 
     theta_y = dec_rotation
@@ -69,15 +73,27 @@ def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
 
     c_ty = np.cos(theta_y)
     s_ty = np.sin(theta_y)
-    c_tz = np.cos(theta_z)
-    s_tz = np.sin(theta_z)
+    # c_tz = np.cos(theta_z)
+    # s_tz = np.sin(theta_z)
 
-    xp = x*c_ty*c_tz - y*s_tz + z*c_tz*s_ty
-    yp = s_tz*c_ty*x + y*c_tz + z*s_ty*s_tz
-    zp = -x*s_ty + z*c_ty
+    # Rotate about y
+    xp = c_ty*x + s_ty*z
+    yp = y
+    zp = -s_ty*x + c_ty*z
+
+    # rotate about z
+    # xp = c_tz*xp - s_tz*yp
+    # yp = s_tz*xp + c_tz*yp
+
+    #xp = x*c_ty*c_tz - y*s_tz + z*c_tz*s_ty
+    #yp = s_tz*c_ty*x + y*c_tz + z*s_ty*s_tz
+    #zp = -x*s_ty + z*c_ty
 
     ra_p = np.arctan2(yp, xp)
     dec_p = np.arcsin(zp)
+
+    ra_p += ra_rotation
+
 
     return ra_p, dec_p
 
