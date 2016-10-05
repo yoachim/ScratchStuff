@@ -1,9 +1,8 @@
 import numpy as np
 import healpy as hp
 import matplotlib.pylab as plt
-from hp_align import rotate_ra_dec
-from surveyStatus import *
-from utils import wrapRADec
+from utils import rotate_ra_dec
+from surveyStatus import countFilterStatus, HealpixLookup
 
 
 field_data = np.loadtxt('fieldID.dat', delimiter='|', skiprows=1,
