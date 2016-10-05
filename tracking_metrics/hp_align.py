@@ -1,48 +1,10 @@
 import numpy as np
-import healpy as hp
+from utils import wrapRADec
 
 
-# Thinking about how one could dynamically place LSST pointings to minimize the power spectrum.
-
-# Want to avoid the psudo-deep drilling fields as much as possible.
-
-# given some selected region of healpixels, calc the min and max ra and dec.
-# Select fields that have the same range but centered on
-
-# Ah, maybe just do an evenish tesselation on the range dec +/- 45 degrees and RA +/- 15 degrees?
-# Then rotate that tesselation to the center of the blob I want to do?
-
-# rotate pointings to be centered on region center. Compute dict and reverse dict of healpixel to pointings?
-
-
-# Maybe generate a grid of starting tesselations, and then rotate all of them to the new coordinates?
-
-field_data = np.loadtxt('fieldID.dat', delimiter='|', skiprows=1,
-                        dtype=zip(['id', 'ra', 'dec'], [int, float, float]))
-
-ra_range = 15.  # Degrees
-dec_range = 45.
-good = np.where(((field_data['ra'] <= ra_range) | (field_data['ra'] >= 360.-ra_range)) &
-                ((field_data['dec'] >= -dec_range) & (field_data['dec'] <= dec_range)))
-
-field_data = field_data[good]
-
-def rotate_around_ra_dec(ra, dec, ra_rotation, dec_rotaion):
+def rotate_ra_dec(ra, dec, ra_target, dec_target, init_rotate=0.):
     """
-    Rotate Ra,dec points around a specified axis.
-
-    handy sheet here:
-    http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/ArbitraryAxisRotation.pdf
-    """
-
-
-
-
-
-def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
-    """
-    Rotate ra and dec coordinates to be centered on a new ra and dec.
-    Coords are rotated first in dec, then in RA.
+    Rotate ra and dec coordinates to be centered on a new dec.
 
     Inputs
     ------
@@ -52,59 +14,46 @@ def rotate_ra_dec(ra, dec, ra_rotation, dec_rotation):
         Dec coordinate(s) to be rotated in radians
     ra_rotation : float
         RA distance to rotate in radians
-    dec_rotation : float
+    dec_target : float
         Dec distance to rotate in radians
+    init_rotate : float (0.)
+        The amount to rotate the points around the x-axis first (radians).
     """
+    # point (ra,dec) = (0,0) is at x,y,z = 1,0,0
 
-    # OK, rotating to the correct ra is a rotation around the z axis
-    # then rotating to the correct dec is a y rotation)
-    # want to do the y-rotation first
+    x, y, z = ra_dec_2_xyz(ra, dec)
 
-    # proint (ra,dec) = (0,0) is at x,y,z = 1,0,0
+    # Rotate around the x axis to start
+    c_i = np.cos(init_rotate)
+    s_i = np.sin(init_rotate)
+    xp = x
+    yp = c_i*y - s_i*z
+    zp = s_i*y + c_i*z
 
-
-    # XXXXX--wait, can't I just rotate the points around y-axis to get them all
-    # on the correct decs, then add the ra-offset?
-
-    x, y, z = ra_dec_2_xyx(ra, dec)
-
-    theta_y = dec_rotation
-    theta_z = ra_rotation
-
+    theta_y = dec_target
     c_ty = np.cos(theta_y)
     s_ty = np.sin(theta_y)
-    # c_tz = np.cos(theta_z)
-    # s_tz = np.sin(theta_z)
 
     # Rotate about y
-    xp = c_ty*x + s_ty*z
-    yp = y
-    zp = -s_ty*x + c_ty*z
+    xp2 = c_ty*xp + s_ty*zp
+    zp2 = -s_ty*xp + c_ty*zp
 
-    # rotate about z
-    # xp = c_tz*xp - s_tz*yp
-    # yp = s_tz*xp + c_tz*yp
+    # Convert back to RA, Dec
+    ra_p = np.arctan2(yp, xp2)
+    dec_p = np.arcsin(zp2)
 
-    #xp = x*c_ty*c_tz - y*s_tz + z*c_tz*s_ty
-    #yp = s_tz*c_ty*x + y*c_tz + z*s_ty*s_tz
-    #zp = -x*s_ty + z*c_ty
+    # Rotate to the correct RA
+    ra_p += ra_target
 
-    ra_p = np.arctan2(yp, xp)
-    dec_p = np.arcsin(zp)
-
-    ra_p += ra_rotation
-
+    ra_p, dec_p = wrapRADec(ra_p, dec_p)
 
     return ra_p, dec_p
 
 
-def ra_dec_2_xyx(ra, dec):
+def ra_dec_2_xyz(ra, dec):
         """Calculate x/y/z values for ra/dec points, ra/dec in radians."""
         # Note ra/dec can be arrays.
         x = np.cos(dec) * np.cos(ra)
         y = np.cos(dec) * np.sin(ra)
         z = np.sin(dec)
         return x, y, z
-
-# genenate a bunch of fields. make arrays that shift them by d_ra, d_dec, d_theta.  
-# Fit the peak to find the best d_ra, d_dec, d_theta.
