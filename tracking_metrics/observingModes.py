@@ -71,7 +71,7 @@ def SurveyMode(BaseMode):
     def __init__(self, target_depth_maps, block_area=250.,
                  current_m5_weight=0.5, goal_depth_weight=0.5, smooth_fwhm=10.,
                  current_filter_bonus=2., pairs=False, nside=128, **kwargs):
-        super(ScanMode, self).__init__(**kwargs)
+        super(SurveyMode, self).__init__(**kwargs)
 
         self.current_m5_weight = current_m5_weight
         self.goal_depth_weight = goal_depth_weight

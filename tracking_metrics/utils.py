@@ -1,7 +1,9 @@
 import numpy as np
 from surveyStatus import HealpixLookup
 import healpy as hp
-
+import lsst.sims.utils as utils
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz
+from astropy import units as u
 
 def wrapRADec(ra, dec):
     # XXX--from MAF, should put in general utils
@@ -87,21 +89,72 @@ def ra_dec_2_xyz(ra, dec):
         z = np.sin(dec)
         return x, y, z
 
+
 def generate_taget_maps(nside=128):
     """
     Generate a suite of target depths for each filter
     """
-    target_median_depths = {'u': 26.1, 'g': 27.4, 'r': 27.5, 'i': 26.8, 'z': 26.1, 'y': 24.9}
-    nes_depth = {}
-    south_pole_depth = {}
-    galactic_plane_depth = {}
+    npix = hp.nside2npix(nside)
+    ra, dec = utils._hpid2RaDec(nside, np.arange(npix))
+    coord = SkyCoord(ra=ra*u.rad, dec=dec*u.rad)
+    g_long, g_lat = coord.galactic.l.radian, coord.galactic.b.radian
+    eclip_long, eclip_lat = coord.barycentrictrueecliptic.lon.radian, coord.barycentrictrueecliptic.lat.radian
+
+    # Set borders of different regions 
+    main_dec = 0
+
+    south_dec = np.radians(-60.)
+
+    nes_dec = 0.
+    nes_eclip = np.radians(15.)
+
+    gal_lat = np.radians(10.)
+    gal_long_end1 = np.radians(70.)
+    gal_long_end2 = np.radians(270.)
+
+    wfd_region = np.where((dec <= main_dec) &
+                          ((np.abs(g_lat) >= gal_lat) | (g_long > gal_long_end1)) &
+                          (dec >= south_dec))
+    south_pole_region = np.where(dec < south_dec)
+    nes_region = np.where((dec > nes_dec) & (eclip_lat < nes_eclip))
+
+    # Need to add in the galactic plane taper.
+    galatic_plane_region = np.where((np.abs(g_lat) < gal_lat) &
+                                    ((g_long < gal_long_end1) | (g_long > gal_long_end2)))
+    # gp2 = np.where((np.abs(g_lat) < gal_lat) & (g_long > gal_long_end2))
+    
+    wfd_depth = {'u': 26.1, 'g': 27.4, 'r': 27.5, 'i': 26.8, 'z': 26.1, 'y': 24.9}
+    nes_depth = {'g': 26.9, 'r': 27.0, 'i': 26.3, 'z': 23.6}
+    south_pole_depth = {'u': 25.6, 'g': 26.9, 'r': 27.0, 'i': 26.3, 'z': 23.6, 'y': 24.4}
+    galactic_plane_depth = {'u': 25.6, 'g': 26.9, 'r': 27.0, 'i': 26.3, 'z': 23.6, 'y': 24.4}
 
     all_filters = []
-    all_filters.extend(target_map.keys())
-    all_fitlers.extend(nes_depth.keys())
-    all_fitlers.extend(south_pole_depth.keys())
+    all_filters.extend(wfd_depth.keys())
+    all_filters.extend(nes_depth.keys())
+    all_filters.extend(south_pole_depth.keys())
     all_filters.extend(galactic_plane_depth.keys())
     all_filters = list(set(all_filters))
+
+    all_depth = {}
+    for filtername in all_filters:
+        all_depth[filtername] = np.empty(npix, dtype=float)
+        all_depth[filtername].fill(hp.UNSEEN)
+
+    # Should probably throw an error if any of the regions overlap.
+
+    for filtername in wfd_depth:
+        all_depth[filtername][wfd_region] = wfd_depth[filtername]
+
+    for filtername in south_pole_depth:
+        all_depth[filtername][south_pole_region] = south_pole_depth[filtername]
+
+    for filtername in nes_depth:
+        all_depth[filtername][nes_region] = nes_depth[filtername]
+
+    for filtername in galactic_plane_depth:
+        all_depth[filtername][galatic_plane_region] = galactic_plane_depth[filtername]
+
+    return all_depth
 
 
 class min_coadd_power_tesselate(object):

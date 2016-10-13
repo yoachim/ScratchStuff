@@ -86,10 +86,12 @@ class HealpixLookup(object):
         x, y, z = self._treexyz(ra, dec)
         data = list(zip(x, y, z))
         if np.size(data) > 0:
-            try:
-                self.hptree = kdtree(data, leafsize=leafsize, balanced_tree=False, compact_nodes=False)
-            except TypeError:
-                self.hptree = kdtree(data, leafsize=leafsize)
+            self.hptree = kdtree(data, leafsize=leafsize)
+        #    try:
+        #        XXX--this is crashing the kernel? Not sure why, need to make sure other way speed-tests OK
+        #        self.hptree = kdtree(data, leafsize=leafsize, balanced_tree=False, compact_nodes=False)
+        #    except TypeError:
+        #        self.hptree = kdtree(data, leafsize=leafsize)
         else:
             raise ValueError('RA and Dec should have length greater than 0.')
 
