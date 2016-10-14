@@ -5,6 +5,7 @@ import lsst.sims.utils as utils
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz
 from astropy import units as u
 
+
 def wrapRADec(ra, dec):
     # XXX--from MAF, should put in general utils
     """
@@ -32,6 +33,7 @@ def wrapRADec(ra, dec):
     # Wrap RA.
     ra = ra % (2.0 * np.pi)
     return ra, dec
+
 
 def rotate_ra_dec(ra, dec, ra_target, dec_target, init_rotate=0.):
     """
@@ -92,7 +94,7 @@ def ra_dec_2_xyz(ra, dec):
 
 def generate_taget_maps(nside=128):
     """
-    Generate a suite of target depths for each filter
+    Generate a suite of target depths for each filter.
     """
     npix = hp.nside2npix(nside)
     ra, dec = utils._hpid2RaDec(nside, np.arange(npix))
@@ -100,7 +102,7 @@ def generate_taget_maps(nside=128):
     g_long, g_lat = coord.galactic.l.radian, coord.galactic.b.radian
     eclip_long, eclip_lat = coord.barycentrictrueecliptic.lon.radian, coord.barycentrictrueecliptic.lat.radian
 
-    # Set borders of different regions 
+    # Set borders of different regions
     main_dec = 0
 
     south_dec = np.radians(-60.)
@@ -121,8 +123,7 @@ def generate_taget_maps(nside=128):
     # Need to add in the galactic plane taper.
     galatic_plane_region = np.where((np.abs(g_lat) < gal_lat) &
                                     ((g_long < gal_long_end1) | (g_long > gal_long_end2)))
-    # gp2 = np.where((np.abs(g_lat) < gal_lat) & (g_long > gal_long_end2))
-    
+
     wfd_depth = {'u': 26.1, 'g': 27.4, 'r': 27.5, 'i': 26.8, 'z': 26.1, 'y': 24.9}
     nes_depth = {'g': 26.9, 'r': 27.0, 'i': 26.3, 'z': 23.6}
     south_pole_depth = {'u': 25.6, 'g': 26.9, 'r': 27.0, 'i': 26.3, 'z': 23.6, 'y': 24.4}
