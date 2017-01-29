@@ -22,7 +22,7 @@ def calcM5(skybright, filters, airmass, seeing, expTime=30.):
 if __name__ == '__main__':
     sm = sb.SkyModel(observatory='LSST', mags=True)
 
-    runName = 'minion_1016'
+    runName = 'minion_1016_modified'
     opsdb = db.OpsimDatabase(runName+'_sqlite.db')
     data = opsdb.fetchMetricData(['fieldRA', 'fieldDec', 'expMJD', 'airmass', 
                                  'filter', 'filtSkyBrightness'], '', distinctExpMJD=False)
