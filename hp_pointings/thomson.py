@@ -1,5 +1,6 @@
 import numpy as np
 import healpy as hp
+from scipy.optimize import minimize
 
 # Would like to be able to get N points evenly distributed on a sphere.
 
@@ -9,14 +10,13 @@ import healpy as hp
 def points_on_sphere_potential(x):
     """
     return the potential energy for n points on a sphere
-    x should be theta, phi pairs in radians
+    x should be ra,dec pairs in radians
 
     Got equation from https://www.cs.purdue.edu/homes/pengh/reports/590OP.pdf
-
-    XXX--need to get this in dec rather than phi I think.
     """
 
-    # Arg, need to make nxn arrays, set diagonal to zero, and sum to avoid loop
+    if x.ndim == 1:
+        x = x.reshape(x.size/2, 2)
 
     cos_phi = np.cos(x[:, 1])
     sin_phi = np.sin(x[:, 1])
@@ -37,6 +37,23 @@ def points_on_sphere_potential(x):
 
 
     return np.abs(np.sum(func))
+
+
+def temp_points_on_sphere_potential(x):
+    """
+    x should be ra, dec pairs
+    """
+    di = np.diag_indices(x[:, 0].size)
+    phi = np.pi/2. - x[:,1]
+    cos_dec_diff = np.cos(phi[:,np.newaxis]-phi)
+    sin_prod = np.sin(x[:, 0, np.newaxis])*np.sin(x[:, 0])
+    cos_prod = np.cos(x[:, 0, np.newaxis]) * np.cos(x[:, 0])
+    energy =1./(1.-2.*(sin_prod*cos_dec_diff+cos_prod))
+    energy[di] = 0
+
+    return np.sum(energy)
+
+
 
 # Should see what happens if the force is based on angular distance rather than 3-D distance.
 
@@ -60,10 +77,13 @@ def haver_potential(x):
     """
     Find the potential energy if force is along radial distance
     """
+    if x.ndim == 1:
+        x = x.reshape(x.size/2, 2)
+
     di = np.diag_indices(x[:, 0].size)
     # There's a factor of 2 savings to be had since i,j and j,i are symetric.
     distances = haversine(x[:, 0, np.newaxis], x[:, 1, np.newaxis], x[:, 0], x[:, 1])
-
+    distances[di] = 1.
     potential = 1./distances
     potential[di] = 0
     return np.abs(np.sum(potential))
@@ -71,18 +91,17 @@ def haver_potential(x):
 
 if __name__ == "__main__":
 
+    pts = np.array([[0, np.pi/2], [0, -np.pi/2]])
+    e1 = points_on_sphere_potential(pts)
 
-    pts = np.array([[0,0],[0,np.pi]])
-    #e1 = points_on_sphere_potential(pts)
+    he1 = haver_potential(pts)
 
-    #he1 = haver_potential(pts)
+    pts = np.array([[0, 0], [np.pi, 0]])
+    e2 = points_on_sphere_potential(pts)
+    he2 = haver_potential(pts)
 
-    pts = np.array([[0,0],[np.pi/2,0]])
-    #e2 = points_on_sphere_potential(pts)
-    #he2 = haver_potential(pts)
-
-    #print 'e1 = %f, e2 = %f' %(e1, e2)
-    #print 'he1 = %f, he2 = %f' %(he1, he2)
+    print 'e1 = %f, e2 = %f' % (e1, e2)
+    print 'he1 = %f, he2 = %f' % (he1, he2)
 
     lons = np.radians(np.arange(45., 405, 90.))
     lats = np.radians(np.array([45., -45.]))
@@ -97,4 +116,12 @@ if __name__ == "__main__":
 
     print 'cube potential = %f' % points_on_sphere_potential(cube_points)
     print 'cube potential_angular = %f' % haver_potential(cube_points)
+
+
+    # I'd like to make a solver to show that minimizing the regular potential makes something strange, and 
+    # minimzing the angular distance potential makes a cube when given 8 points.
+
+    haver_opt = minimize(haver_potential, cube_points)
+    reg_opt = minimize(points_on_sphere_potential, cube_points)
+    import pdb ; pdb.set_trace()
 
