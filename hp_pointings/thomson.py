@@ -18,17 +18,26 @@ def ra_wrap(ra_in):
     return ra
 
 
-def cart2sphere(xx):
+def radec2xyz(ra, dec):
+    x = np.cos(dec)*np.sin(ra)
+    y = np.cos(dec)*np.cos(ra)
+    z = np.sin(dec)
+    return x, y, z
+
+
+def xyz2radec(xx, x=None, y=None, z=None):
     """
     Given (x,y,z), return the ra and dec of the point on the unit sphere
     """
 
-    if np.ndim == 1:
-        xx.reshape(3,xx.size/3)
+    if xx is not None:
+        if np.ndim(xx) == 1:
+            xx = xx.reshape(3, xx.size/3)
 
-    x = xx[0]
-    y = xx[1]
-    z = xx[2]
+
+        x = xx[0]
+        y = xx[1]
+        z = xx[2]
 
     # normalize by the radius.
     norm = (x**2+y**2+z**2)**0.5
@@ -36,9 +45,8 @@ def cart2sphere(xx):
     y = y/norm
     z = z/norm
 
-
     dec = np.arcsin(z)
-    ra = np.arctan2(y, x)
+    ra = np.arctan2(y, x) + np.pi
     return ra, dec
 
 
@@ -61,19 +69,50 @@ def limit_wrap(ra_in, dec_in):
     return ra, dec
 
 
-def points_on_sphere_potential(x):
+def points_on_sphere_potential(xx):
+    if xx.ndim == 1:
+        # x = x.reshape(x.size/2, 2)
+        xx = xx.reshape(xx.size/3, 3)
+    x = xx[:, 0]
+    y = xx[:, 1]
+    z = xx[:, 2]
+
+    norm = (x**2+y**2+z**2)**0.5
+    x = x/norm
+    y = y/norm
+    z = z/norm
+
+    di = np.diag_indices(x.size)
+    r_sq = (x[:,np.newaxis] - x)**2 + (y[:,np.newaxis] - y)**2 +(z[:,np.newaxis] - z)**2 
+
+    r_sq[di] = 1.
+
+    potential = 1./r_sq
+    potential[di] = 0.
+
+    if True in np.isinf(potential):
+        import pdb ; pdb.set_trace()
+
+    return np.sum(potential)
+
+
+
+def blah_points_on_sphere_potential(x):
     """
     return the potential energy for n points on a sphere
-    x should be ra,dec pairs in radians
+    x should be x,y,z. Projects them down radius vector to unit sphere.
 
     Got equation from https://www.cs.purdue.edu/homes/pengh/reports/590OP.pdf
     """
 
     if x.ndim == 1:
-        x = x.reshape(x.size/2, 2)
+        # x = x.reshape(x.size/2, 2)
+        x = x.reshape(x.size/3, 3)
 
-    ra = x[:, 0]
-    dec = x[:, 1]
+    ra, dec = xyz2radec(None, x=x[:, 0], y=x[:, 1], z=x[:, 2])
+
+    #ra = x[:, 0]
+    #dec = x[:, 1]
 
     cos_phi = np.cos(dec)
     sin_phi = np.sin(dec)
@@ -92,6 +131,9 @@ def points_on_sphere_potential(x):
     # Make sure the diagonal is zero
     func[di] = 0
 
+    if np.inf in func:
+        import pdb ; pdb.set_trace()
+
     return np.abs(np.sum(func))
 
 
@@ -100,18 +142,14 @@ def temp_points_on_sphere_potential(x):
     x should be ra, dec pairs
     """
     di = np.diag_indices(x[:, 0].size)
-    phi = np.pi/2. - x[:,1]
-    cos_dec_diff = np.cos(phi[:,np.newaxis]-phi)
+    phi = np.pi/2. - x[:, 1]
+    cos_dec_diff = np.cos(phi[:, np.newaxis]-phi)
     sin_prod = np.sin(x[:, 0, np.newaxis])*np.sin(x[:, 0])
     cos_prod = np.cos(x[:, 0, np.newaxis]) * np.cos(x[:, 0])
-    energy =1./(1.-2.*(sin_prod*cos_dec_diff+cos_prod))
+    energy = 1./(1.-2.*(sin_prod*cos_dec_diff+cos_prod))
     energy[di] = 0
 
     return np.sum(energy)
-
-
-
-# Should see what happens if the force is based on angular distance rather than 3-D distance.
 
 
 def haversine(long1, lat1, long2, lat2):
@@ -129,18 +167,24 @@ def haversine(long1, lat1, long2, lat2):
     return 2 * np.arcsin(np.sqrt(t1 + t2))
 
 
-def haver_potential(x):
+def haver_potential(xx):
     """
     Find the potential energy if force is along radial distance
     """
-    if x.ndim == 1:
-        x = x.reshape(x.size/2, 2)
+    if xx.ndim == 1:
+        # x = x.reshape(x.size/2, 2)
+        xx = xx.reshape(xx.size/3, 3)
+    x = xx[:, 0]
+    y = xx[:, 1]
+    z = xx[:, 2]
 
-    ra = x[:, 0]
-    dec = x[:, 1]
-    ra, dec = limit_wrap(ra, dec)
+    #ra = x[:, 0]
+    #dec = x[:, 1]
+    #ra, dec = limit_wrap(ra, dec)
 
-    di = np.diag_indices(x[:, 0].size)
+    ra, dec = xyz2radec(None, x=x, y=y, z=z)
+
+    di = np.diag_indices(ra.size)
     # There's a factor of 2 savings to be had since i,j and j,i are symetric.
     distances = haversine(ra[:, np.newaxis], dec[:, np.newaxis], ra, dec)
     distances[di] = 1.
@@ -151,12 +195,13 @@ def haver_potential(x):
 
 if __name__ == "__main__":
 
-    pts = np.array([[0, np.pi/2], [0, -np.pi/2]])
+    pts = np.array([[0, 0, 1], [0, -1, 0]])
+
     e1 = points_on_sphere_potential(pts)
 
     he1 = haver_potential(pts)
 
-    pts = np.array([[0, 0], [np.pi, 0]])
+    pts = np.array([[0, 0, 1], [0., 0, -1.]])
     e2 = points_on_sphere_potential(pts)
     he2 = haver_potential(pts)
 
@@ -166,17 +211,18 @@ if __name__ == "__main__":
     lons = np.radians(np.arange(45., 405, 90.))
     lats = np.radians(np.array([45., -45.]))
 
-    cube_points = np.zeros((8,2), dtype=float)
+    cube_points = np.zeros((2, 8), dtype=float)
     i = 0
     for lon in lons:
         for lat in lats:
-            cube_points[i,0] = lon
-            cube_points[i,1] = lat
+            cube_points[0, i] = lon
+            cube_points[1, i] = lat
             i += 1
 
+    cx, cy, cz = radec2xyz(cube_points[0,:], cube_points[1,:])
+    cube_points = np.vstack((cx, cy, cz)).T
     print 'cube potential = %f' % points_on_sphere_potential(cube_points)
     print 'cube potential_angular = %f' % haver_potential(cube_points)
-
 
     # I'd like to make a solver to show that minimizing the regular potential makes something strange, and 
     # minimzing the angular distance potential makes a cube when given 8 points.
@@ -184,20 +230,49 @@ if __name__ == "__main__":
     haver_opt = minimize(haver_potential, cube_points)
     reg_opt = minimize(points_on_sphere_potential, cube_points)
 
+    import pdb ; pdb.set_trace()
+
+    ra, dec = xyz2radec(cube_points.T)
+    hp.mollview(_healbin(ra, dec, dec*0+1, nside=16, reduceFunc=np.sum), title='input')
+
+    ra, dec = xyz2radec(haver_opt.x)
+    hp.mollview(_healbin(ra, dec, dec*0+1, nside=16), title='haver_opt')
+
+    ra, dec = xyz2radec(reg_opt.x)
+    hp.mollview(_healbin(ra, dec, dec*0+1, nside=16), title='reg_opt')
+
+    plt.show()
+
+
+
     # Let's try solving a 200 point grid
     ra, dec = fib_sphere_grid(20)
-    fib_points = np.hstack((ra,dec))
+    x, y, z = radec2xyz(ra, dec)
+    # fib_points = np.hstack((ra,dec))
+    fib_points = np.hstack((x, y, z))
 
     haver_opt = minimize(haver_potential, fib_points)
-    haver_ra = haver_opt.x[0:haver_opt.x.size/2]
-    haver_dec = haver_opt.x[haver_opt.x.size/2:]
     reg_opt = minimize(points_on_sphere_potential, fib_points)
-    reg_ra = reg_opt.x[0:reg_opt.x.size/2]
-    reg_dec = reg_opt.x[reg_opt.x.size/2:]
+    
+
+    print 'haver potential = %f' % haver_potential(haver_opt.x)
+    print 'reg potential = %f' % points_on_sphere_potential(reg_opt.x)
+
+    start = _healbin(ra, dec, ra*0+1, nside=16)
+    ra, dec = xyz2radec(haver_opt.x)
+    end = _healbin(ra, dec, ra*0+1, nside=16)
 
 
     # Ugh, minimizing on a sphere is a pain in the ass. maybe I should mimize where I vary x,y,z? Then just use those to compute theta and phi
     # That way I don't have to worry about angle wrapping things, points near the poles will be well behaved. 
+
+
+    # OK, this shit is failing miserably. I need to work out given an array of ra,dec find the physical distances and angular distances
+    # between all the pairs of points. 
+    # Generate angular distances between list of points. Use numpy.triu_indices to get the i,j distances.
+    # Make arrays of ra_i, ra_j, dec_i, dec_j. 
+    # Ang dist to physical dist. 
+    # Potential given distance matrix. 
 
 
 
