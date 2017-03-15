@@ -1,3 +1,5 @@
+#!/Users/yoachim/lsst/DarwinX86/miniconda2/3.19.0.lsst4/bin/python
+
 #!/usr/bin/env python
 
 from __future__ import print_function
@@ -29,23 +31,61 @@ def makeBundleList(dbFile, night=1, nside=64, latCol='ditheredDec', lonCol='dith
 
     # Construct sql queries for each filter and all filters
     filters = ['u', 'g', 'r', 'i', 'z', 'y']
-    sqls = ['filter="%s"' % f for f in filters]
-    sqls.append('')
+    sqls = ['night=%i and filter="%s"' % (night, f)for f in filters]
+    sqls.append('night=%i' % night)
 
     bundleList = []
-    plotFuncs = [plots.LambertSkyMap()]
+    plotFuncs_lam = [plots.LambertSkyMap()]
 
     reg_slicer = slicers.HealpixSlicer(nside=nside, lonCol=lonCol, latCol=latCol)
     altaz_slicer = slicers.HealpixSlicer(nside=nside, latCol='zenithDistance',
                                          lonCol='azimuth', useCache=False)
+
+    unislicer = slicers.UniSlicer()
     for sql in sqls:
 
         # Number of exposures
-        metric = metrics.CountMetric('expMJD', metricName='Nvisits')
+        metric = metrics.CountMetric('expMJD', metricName='N visits')
         bundle = metricBundles.MetricBundle(metric, reg_slicer, sql)
         bundleList.append(bundle)
-        bundle = metricBundles.MetricBundle(metric, altaz_slicer, sql, plotFuncs=plotFuncs)
+        metric = metrics.CountMetric('expMJD', metricName='N visits alt az')
+        bundle = metricBundles.MetricBundle(metric, altaz_slicer, sql, plotFuncs=plotFuncs_lam)
         bundleList.append(bundle)
+
+        metric = metrics.MeanMetric('expMJD', metricName='Mean Visit Time')
+        bundle = metricBundles.MetricBundle(metric, reg_slicer, sql)
+        bundleList.append(bundle)
+        metric = metrics.MeanMetric('expMJD', metricName='Mean Visit Time alt az')
+        bundle = metricBundles.MetricBundle(metric, altaz_slicer, sql, plotFuncs=plotFuncs_lam)
+        bundleList.append(bundle)
+
+        metric = metrics.CountMetric('expMJD', metricName='N_visits')
+        bundle = metricBundles.MetricBundle(metric, unislicer, sql)
+        bundleList.append(bundle)
+
+        # Need pairs in window to get a map of how well it gathered SS pairs.
+
+
+    metric = metrics.NChangesMetric(col='filter', metricName='Filter Changes')
+    bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
+    bundleList.append(bundle)
+
+    metric = metrics.OpenShutterFractionMetric()
+    bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
+    bundleList.append(bundle)
+
+    metric = metrics.MeanMetric('slewTime')
+    bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
+    bundleList.append(bundle)
+
+    metric = metrics.MinMetric('slewTime')
+    bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
+    bundleList.append(bundle)
+
+    metric = metrics.MaxMetric('slewTime')
+    bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
+    bundleList.append(bundle)
+
 
     return metricBundles.makeBundlesDictFromList(bundleList)
 
@@ -78,7 +118,7 @@ if __name__ == '__main__':
 
 
     # Set up metricBundleGroup.
-    group = metricBundles.MetricBundleGroup(bundleDict, opsdb, uotDir=args.outDir, resultsDb=resultsDb)
+    group = metricBundles.MetricBundleGroup(bundleDict, opsdb, outDir=args.outDir, resultsDb=resultsDb)
     group.runAll()
     group.plotAll()
 
