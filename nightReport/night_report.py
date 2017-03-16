@@ -65,6 +65,7 @@ def makeBundleList(dbFile, night=1, nside=64, latCol='ditheredDec', lonCol='dith
 
         # Need pairs in window to get a map of how well it gathered SS pairs.
 
+    # Moon phase.
 
     metric = metrics.NChangesMetric(col='filter', metricName='Filter Changes')
     bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
@@ -86,6 +87,24 @@ def makeBundleList(dbFile, night=1, nside=64, latCol='ditheredDec', lonCol='dith
     bundle = metricBundles.MetricBundle(metric, unislicer, 'night=%i' % night)
     bundleList.append(bundle)
 
+    # Make plots of the solar system pairs that were taken in the night
+    metric = metrics.PairMetric()
+    sql = 'night=%i and (filter ="r" or filter="g" or filter="i")' % night
+    bundle = metricBundles.MetricBundle(metric, reg_slicer, sql)
+    bundleList.append(bundle)
+
+    metric = metrics.PairMetric(metricName='z Pairs')
+    sql = 'night=%i and filter="z"' % night
+    bundle = metricBundles.MetricBundle(metric, reg_slicer, sql)
+    bundleList.append(bundle)
+
+    # Plot up each visit
+    metric = metrics.NightPointingMetric()
+    slicer = slicers.UniSlicer()
+    sql = sql = 'night=%i' % night
+    plotFuncs = [plots.NightPointingPlotter()]
+    bundle = metricBundles.MetricBundle(metric, slicer, sql, plotFuncs=plotFuncs)
+    bundleList.append(bundle)
 
     return metricBundles.makeBundlesDictFromList(bundleList)
 
