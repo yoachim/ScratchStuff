@@ -74,6 +74,6 @@ from astropy.visualization.mpl_normalize import ImageNormalize
 norm = ImageNormalize(stretch=SqrtStretch(), vmin=0, vmax=100)
 plt.imshow(image, cmap='Greys', origin='lower', norm=norm)
 apertures.plot(color='blue', lw=1.5, alpha=0.5)
-
+plt.savefig('phot_example.png')
 
 

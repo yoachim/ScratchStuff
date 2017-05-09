@@ -30,10 +30,13 @@ def potential(x0):
 
 
 # let's generate some random points on a sphere
-npts = 100
+npts = 177
 theta = np.random.rand(npts)*np.pi*2.
 phi = np.arccos(2.*np.random.rand(npts)-1.)
 
 x = np.concatenate((theta, phi))
 
 ack = minimize(potential, x, method='CG')
+print 'Energey for %i points = %f' % (npts, potential(ack.x))
+
+# Looks like I get the same energy values as https://en.wikipedia.org/wiki/Thomson_problem
