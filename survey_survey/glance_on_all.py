@@ -12,20 +12,30 @@ def RothColMapDict():
     result = {'ra': 'ra', 'dec': 'dec', 'mjd': 'mjd',
               'exptime': 'exptime', 'visittime': 'exptime', 'alt': 'alt',
               'az': 'az', 'filter': 'filter', 'fiveSigmaDepth': 'fivesigmadepth',
-              'night': 'night', 'slewtime': 'slewtime', 'seeingGeom': 'seeing'}
-
+              'night': 'night', 'slewtime': 'slewtime', 'seeingGeom': 'seeing', 
+              'visitExposureTime': 'exptime', 'seeingFwhmEff': 'seeing', 'skyBrightness': 'skybrightness'}
     return result
 
 
-outDir='Roth'
 
+
+outDir = 'Elahe'
+resultsDb = db.ResultsDb(outDir=outDir)
+conn = db.SimpleDatabase('elahe.sqlite')
+gb = glanceBundle(colmap_dict=RothColMapDict())
+group = metricBundles.MetricBundleGroup(gb, conn, outDir=outDir, resultsDb=resultsDb)
+group.runAll()
+group.plotAll()
+
+
+
+outDir='Roth'
 resultsDb = db.ResultsDb(outDir=outDir)
 conn = db.SimpleDatabase('Roth.sqlite')
 gb = glanceBundle(colmap_dict=RothColMapDict())
 group = metricBundles.MetricBundleGroup(gb, conn, outDir=outDir, resultsDb=resultsDb)
 group.runAll()
 group.plotAll()
-
 
 
 #opsdb = utils.connectOpsimDb('pontus_1074.db')
