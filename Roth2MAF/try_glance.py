@@ -14,7 +14,7 @@ outDir='Glance'
 colmap = {'ra': 'ra', 'dec': 'dec', 'mjd': 'mjd',
               'exptime': 'exptime', 'visittime': 'exptime', 'alt': 'alt',
               'az': 'az', 'filter': 'filter', 'fiveSigmaDepth': 'fivesigmadepth',
-              'night': 'night', 'slewtime': 'slewTime', 'seeingGeom': 'seeing'}
+              'night': 'night', 'slewtime': 'slewtime', 'seeingGeom': 'seeing'}
 
 gb = glanceBundle(colmap_dict=colmap)
 outDir='Glance'
