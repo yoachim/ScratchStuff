@@ -9,7 +9,7 @@ import lsst.sims.maf.utils as utils
 
 from lsst.sims.maf.bundles import glanceBundle
 
-conn = db.SimpleDatabase('observations.sqlite')
+conn = db.Database('observations.sqlite')
 outDir='Glance'
 colmap = {'ra': 'ra', 'dec': 'dec', 'mjd': 'mjd',
               'exptime': 'exptime', 'visittime': 'exptime', 'alt': 'alt',
