@@ -1,26 +1,9 @@
 import numpy as np
 import ipyparallel as ipp
-
+from test_logger import test_logger, supersimple
 # OK, let's try this with the ipython parallel stuff
 
 # ipcluster start -n 4
-
-
-
-class test_logger(object):
-    def __init__(self, maxval):
-        self.maxval = maxval
-        self.log = []
-
-    def update_log(self, j):
-        if np.max(j) > self.maxval:
-            self.log.append(j)
-
-    def __call__(self):
-        if np.size(self.log) > 0:
-            return np.std(self.log)
-        else:
-            return 0
 
 
 def update_log_helper(inobj, j):
@@ -32,6 +15,7 @@ def call_obj(inobj):
     return inobj()
 
 if __name__ == '__main__':
+
     rc = ipp.Client()
 
     dview = rc[:]
