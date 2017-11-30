@@ -4,12 +4,20 @@ from lsst.sims.speedObservatory import Speed_observatory
 import matplotlib.pylab as plt
 import healpy as hp
 
-# Try making a simple baseline run
+# Try to run rolling cadence
+
+# Make a rolling mask that takes out half the WFD, and one that takes out thirds.
+
+
+
+
+
+
 
 if __name__ == '__main__':
     nside = fs.set_default_nside(nside=32)
 
-    survey_length = 365.25*10  # days
+    survey_length = 365.25  #365.25*10  # days
 
     # Define what we want the final visit ratio map to look like
     years = np.round(survey_length/365.25)
@@ -29,7 +37,7 @@ if __name__ == '__main__':
         bfs.append(fs.Slewtime_basis_function(filtername=filtername, nside=nside))
         bfs.append(fs.Strict_filter_basis_function(filtername=filtername))
 
-        weights = np.array([3.0, 0.3, 1., 3., 3.])
+        weights = np.array([3.0, 0.4, 1., 3., 3.])
         surveys.append(fs.Greedy_survey_fields(bfs, weights, block_size=1, filtername=filtername,
                                                dither=True, nside=nside))
 
@@ -43,6 +51,6 @@ if __name__ == '__main__':
     observatory = Speed_observatory(nside=nside)
     observatory, scheduler, observations = fs.sim_runner(observatory, scheduler,
                                                          survey_length=survey_length,
-                                                         filename='feature_baseline_%iyrs.db' % years,
+                                                         filename='feature_rolling_%iyrs.db' % years,
                                                          delete_past=True)
 
