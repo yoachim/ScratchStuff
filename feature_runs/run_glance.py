@@ -17,4 +17,6 @@ def run_glance(outDir, dbname):
     mbg.plotAll()
     conn.close()
 
-run_glance('temp_2', 'feature_baseline_1yrs.db')
+#run_glance('temp_2', 'feature_baseline_1yrs.db')
+run_glance('roll_check_third', 'feature_rolling_third_0yrs.db')
+run_glance('roll_check_half', 'feature_rolling_half_0yrs.db')
