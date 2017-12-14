@@ -13,7 +13,7 @@ import healpy as hp
 
 if __name__ == '__main__':
     nside = fs.set_default_nside(nside=32)
-    survey_length = 8 #365.25  #365.25*10  # days
+    survey_length = 365.25*10  # days
 
     dec_limits = np.radians([-16.852, -35.545])
 
