@@ -22,4 +22,6 @@ def run_glance(outDir, dbname):
 #run_glance('roll_check_half', 'feature_rolling_half_0yrs.db')
 #run_glance('baseline_10', 'feature_baseline_10yrs.db')
 #run_glance('half_roll_10', 'feature_rolling_half_10yrs.db')
-run_glance('third_roll_10', 'feature_rolling_third_10yrs.db')
+#run_glance('third_roll_10', 'feature_rolling_third_10yrs.db')
+#run_glance('half_roll_mask', 'feature_rolling_half_mask_10yrs.db')
+#run_glance('baseline_1', 'feature_baseline_1yrs.db')
