@@ -10,7 +10,7 @@ bd = batches.glanceBatch(colmap=colmap)
 
 
 def run_glance(outDir, dbname):
-    conn = db.Database(dbname)
+    conn = db.Database(dbname, defaultTable='observations')
     resultsDb = db.ResultsDb(outDir=outDir)
     mbg = MetricBundleGroup(bd, conn, outDir=outDir, resultsDb=resultsDb)
     mbg.runAll()
@@ -24,4 +24,4 @@ def run_glance(outDir, dbname):
 #run_glance('half_roll_10', 'feature_rolling_half_10yrs.db')
 #run_glance('third_roll_10', 'feature_rolling_third_10yrs.db')
 #run_glance('half_roll_mask', 'feature_rolling_half_mask_10yrs.db')
-#run_glance('baseline_1', 'feature_baseline_1yrs.db')
+run_glance('baseline_0', 'feature_baseline_0yrs.db')

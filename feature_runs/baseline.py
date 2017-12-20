@@ -9,7 +9,7 @@ import healpy as hp
 if __name__ == '__main__':
     nside = fs.set_default_nside(nside=32)
 
-    survey_length = 1.5 #365.25*1#0  # days
+    survey_length = 365.25*1#0  # days
 
     # Define what we want the final visit ratio map to look like
     years = np.round(survey_length/365.25)
