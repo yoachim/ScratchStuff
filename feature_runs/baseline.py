@@ -33,7 +33,7 @@ if __name__ == '__main__':
         surveys.append(fs.Greedy_survey_fields(bfs, weights, block_size=1, filtername=filtername,
                                                dither=True, nside=nside))
 
-    surveys.append(fs.Pairs_survey_scripted([], [], ignore_obs='DD'))
+    surveys.append(fs.Pairs_survey_scripted([], [], ignore_obs='DD', min_alt=20.))
 
     # Set up the DD
     dd_surveys = fs.generate_dd_surveys()

@@ -10,19 +10,22 @@ bd = batches.glanceBatch(colmap=colmap)
 
 
 def run_glance(outDir, dbname):
+
+
     conn = db.Database(dbname, defaultTable='observations')
     resultsDb = db.ResultsDb(outDir=outDir)
     mbg = MetricBundleGroup(bd, conn, outDir=outDir, resultsDb=resultsDb)
     mbg.runAll()
     mbg.plotAll()
-    conn.close()
+    conn.close()  
+
 
 #run_glance('temp_2', 'feature_baseline_1yrs.db')
 #run_glance('roll_check_third', 'feature_rolling_third_0yrs.db')
 #run_glance('roll_check_half', 'feature_rolling_half_0yrs.db')
-run_glance('baseline_10', 'feature_baseline_10yrs.db')
-#run_glance('half_roll_10', 'feature_rolling_half_10yrs.db')
-#run_glance('third_roll_10', 'feature_rolling_third_10yrs.db')
-#run_glance('half_roll_mask', 'feature_rolling_half_mask_10yrs.db')
+#run_glance('baseline_10', 'feature_baseline_10yrs.db')
+run_glance('half_roll_10', 'feature_rolling_half_10yrs.db')
+run_glance('third_roll_10', 'feature_rolling_third_10yrs.db')
+run_glance('half_roll_mask_10', 'feature_rolling_half_mask_10yrs.db')
 #run_glance('baseline_0', 'feature_baseline_0yrs.db')
 #run_glance('baseline_1', 'feature_baseline_1yrs.db')
