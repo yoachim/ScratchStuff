@@ -58,11 +58,11 @@ if __name__ == '__main__':
         bfs.append(fs.Slewtime_basis_function(filtername=filtername, nside=nside))
         bfs.append(fs.Strict_filter_basis_function(filtername=filtername))
 
-        weights = np.array([3.0, 0.4, 1., 0., 3., 3.])
+        weights = np.array([3.0, 0.4, 1., 0., 0., 3., 3.])
         surveys.append(fs.Greedy_survey_fields(bfs, weights, block_size=1, filtername=filtername,
                                                dither=True, nside=nside))
 
-    surveys.append(fs.Pairs_survey_scripted([], [], ignore_obs='DD'), min_alt=20.)
+    surveys.append(fs.Pairs_survey_scripted([], [], ignore_obs='DD', min_alt=20.))
 
     # Set up the DD
     dd_surveys = fs.generate_dd_surveys()
