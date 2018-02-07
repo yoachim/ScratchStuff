@@ -9,7 +9,7 @@ import healpy as hp
 if __name__ == '__main__':
     nside = fs.set_default_nside(nside=32)
 
-    survey_length = 365.25*10  # days
+    survey_length = 365.25 # 365.25*10  # days
 
     # Define what we want the final visit ratio map to look like
     years = np.round(survey_length/365.25)
@@ -30,6 +30,7 @@ if __name__ == '__main__':
         bfs.append(fs.Strict_filter_basis_function(filtername=filtername))
 
         weights = np.array([3.0, 0.3, 1., 3., 3.])
+        # Might want to try ignoring DD observations here, so the DD area gets covered normally
         surveys.append(fs.Greedy_survey_fields(bfs, weights, block_size=1, filtername=filtername,
                                                dither=True, nside=nside))
 
