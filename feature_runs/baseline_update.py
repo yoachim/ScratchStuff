@@ -6,6 +6,42 @@ import healpy as hp
 
 # Try making a simple baseline run
 
+
+# Get rid of the silly north stripe
+def standard_goals(nside=None):
+    """
+    A quick function to generate the "standard" goal maps.
+    """
+    # Find the number of healpixels we expect to observe per observation
+    if nside is None:
+        nside = fs.set_default_nside()
+
+    result = {}
+    result['u'] = fs.generate_goal_map(nside=nside, NES_fraction=0.,
+                                    WFD_fraction=0.31, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+    result['g'] = fs.generate_goal_map(nside=nside, NES_fraction=0.2,
+                                    WFD_fraction=0.44, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+    result['r'] = fs.generate_goal_map(nside=nside, NES_fraction=0.46,
+                                    WFD_fraction=1.0, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+    result['i'] = fs.generate_goal_map(nside=nside, NES_fraction=0.46,
+                                    WFD_fraction=1.0, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+    result['z'] = fs.generate_goal_map(nside=nside, NES_fraction=0.4,
+                                    WFD_fraction=0.9, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+    result['y'] = fs.generate_goal_map(nside=nside, NES_fraction=0.,
+                                    WFD_fraction=0.9, SCP_fraction=0.15,
+                                    GP_fraction=0.15, WFD_upper_edge_fraction=0.)
+
+    return result
+
+
+
+
+
 if __name__ == '__main__':
     nside = fs.set_default_nside(nside=32)
 
@@ -13,7 +49,9 @@ if __name__ == '__main__':
 
     # Define what we want the final visit ratio map to look like
     years = np.round(survey_length/365.25)
-    target_map = fs.standard_goals(nside=nside)
+    # get rid of silly northern strip.
+    target_map = standard_goals(nside=nside)
+
     filters = ['u', 'g', 'r', 'i', 'z', 'y']
     surveys = []
 
@@ -30,9 +68,9 @@ if __name__ == '__main__':
         bfs.append(fs.Strict_filter_basis_function(filtername=filtername))
 
         weights = np.array([3.0, 0.3, 1., 3., 3.])
-        # Might want to try ignoring DD observations here, so the DD area gets covered normally
+        # Might want to try ignoring DD observations here, so the DD area gets covered normally--DONE
         surveys.append(fs.Greedy_survey_fields(bfs, weights, block_size=1, filtername=filtername,
-                                               dither=True, nside=nside))
+                                               dither=True, nside=nside, ignore_obs='DD'))
 
     surveys.append(fs.Pairs_survey_scripted([], [], ignore_obs='DD', min_alt=20.))
 
@@ -47,3 +85,4 @@ if __name__ == '__main__':
                                                          filename='feature_baseline_update_%iyrs.db' % years,
                                                          delete_past=True)
 
+# real    1751m55.325s = 29 hours
